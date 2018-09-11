@@ -6,7 +6,8 @@
     },
     "rules" : {
       "padded-blocks": ["error", {"classes": "always", "blocks": "never"}],
-      "no-underscore-dangle": [2, { "allowAfterThis": true }]
+      "no-underscore-dangle": [2, { "allowAfterThis": true }],
+      "class-methods-use-this": [0]
     },
     "extends": "airbnb-base"
 }

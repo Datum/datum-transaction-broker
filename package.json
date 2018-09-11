@@ -16,7 +16,7 @@
     "url": "https://github.com/Datum/transaction-service/issues"
   },
   "homepage": "https://github.com/Datum/transaction-service#readme",
-  "dependencies":{
+  "dependencies": {
     "@babel/polyfill": "^7.0.0",
     "babel-preset-env": "^1.7.0",
     "body-parser": "^1.18.3",
