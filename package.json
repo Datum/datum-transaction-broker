@@ -16,9 +16,25 @@
     "url": "https://github.com/Datum/transaction-service/issues"
   },
   "homepage": "https://github.com/Datum/transaction-service#readme",
+  "dependencies":{
+    "@babel/polyfill": "^7.0.0",
+    "babel-preset-env": "^1.7.0",
+    "body-parser": "^1.18.3",
+    "eth-lightwallet": "^3.0.1",
+    "express": "^4.16.3",
+    "ioredis": "^4.0.0",
+    "uuid": "^3.3.2",
+    "web3": "^1.0.0-beta.35",
+    "winston": "^3.1.0",
+    "winston-daily-rotate-file": "^3.3.2"
+  },
   "devDependencies": {
     "eslint": "^5.5.0",
     "eslint-config-airbnb-base": "^13.1.0",
-    "eslint-plugin-import": "^2.14.0"
+    "eslint-plugin-import": "^2.14.0",
+    "@babel/cli": "^7.0.0",
+    "@babel/core": "^7.0.0",
+    "@babel/preset-env": "^7.0.0",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0"
   }
 }
