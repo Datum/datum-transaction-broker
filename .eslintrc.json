@@ -1,0 +1,12 @@
+{
+    "env": {
+      "node": true,
+      "commonjs": true,
+      "mocha": true
+    },
+    "rules" : {
+      "padded-blocks": ["error", {"classes": "always", "blocks": "never"}],
+      "no-underscore-dangle": [2, { "allowAfterThis": true }]
+    },
+    "extends": "airbnb-base"
+}
