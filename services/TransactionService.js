@@ -28,7 +28,7 @@ class TransactionService {
     const tmp = this.convertVals(request);
     tmp.id = uuid();
     logger.debug(`Dispatching tmp ${tmp.id}`);
-    return this.dispatcher.publish(tmp).then(() => Promise.resolve(tmp.id));
+    return this.dispatcher.pushMsg(JSON.stringify(tmp)).then(() => Promise.resolve(tmp.id));
   }
 
   /**
