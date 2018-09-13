@@ -1,27 +1,43 @@
-# Transaction  Service
+# Datum Transaction Broker
 
 ### Preface
 
+The Datum Transaction Broker is a singleton transaction manager for Ethereum and Ethereum style networks like the Datum Network and other private Ethereum networks. 
+
+The transaction broker is capable of receiving many parallel transaction requests and ensure processing of transactions through a single ethereum account, in the right order, calculating and updating the Nonce of each transaction as required. It implements a Nonce queue system and transaction monitoring to process high volume batch transactions in the shortest time possible and with the lowest Gas costs possible depending on configuration.   
+
 During our work with web3 we faced the famous nonce issue.
 
-Assuming we have 3 concurrent transactions A,B, and C, if 3 transaction are executed in order (Synchronously) there are no issues. However, once we are dealing with concurrent transactions Nonce count become an issue since all 3 transactions will get the same nonce count.
+Assuming we have 3 concurrent transactions A,B, and C from one single ethereum account. If those 3 transaction are executed in order (synchronously) there are no issues. However, once we are dealing with concurrent transactions determining and managing the right Nonce for each transaction becomes an issue.
 
-To resolve this problem, we decided to build a Transaction service that will handle all cases related to nonce, pending transactions,...etc
+The transaction broker solves this problem. 
 
-### Requirements
+### Features
 
-1) Nonce provider need to handle multiple requests sent in the same time.
+1) Nonce provider that can handle multiple requests sent in the same time
 
-2) Nonce provider must keep track of the pending transactions and handle transaction gap scenarios.
+2) Nonce provider keeps track of pending transactions and handles transaction gap scenarios
 
-3) In case of application crash Nonce provider service need to be able to pick up from crash point, as well as sync and review current pending transactions and nonces
+3) In case of transaction broker instance crash Nonce provider service can pick up from crash point, as well as sync and review current pending transactions and nonces, persisted to redis
 
-4) Nonce provider MUST not issue transactions more than Max number of pending transactions per mining node.
+4) Nonce provider does not issue transactions more than Max number of pending transactions per mining node.
 
 5) In case of mining Node crash all the pending transactions residing on the pool might be removed, Nonce provider has to handle this case.
 
-6) In case of high throughput Nonce provider need to handle issuing nonces for multiple accounts to handle increase number of transaction requests.
+6) Nonce provider can manage multiple ethereum accounts at once to handle high transaction volumes.
 
+### Getting Started
+
+```console
+npm install datum-transaction-service
+```
+```javascript
+var transactionBroker = require datum-transaction-service; 
+transactionBroker.config({
+  "redisUrl": "https://127.0.0.1"
+})
+transactionBroker.queueTransaction()
+```
 
 ### Architectural overview
 ![](./docs/imgs/overview.jpg)
