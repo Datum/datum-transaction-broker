@@ -1,11 +1,13 @@
 const redisService = require('../services/RedisService');
 const logger = require('../utils/Logger');
+const Slave = require('./Slave');
 /**
  * Consumer base class implementation
  */
-class Consumer {
+class Consumer extends Slave {
 
   constructor(queues, execute, id, timeout = 0) {
+    super();
     this.id = id;
     redisService.newRedis()
       .then((redis) => {
@@ -15,6 +17,14 @@ class Consumer {
         this.execute = execute;
         this.waitAndExec();
       });
+  }
+
+  /**
+   * @override onResumeWorld
+   */
+  onResumeWorld() {
+    super.onResumeWorld();
+    this.waitAndExec();
   }
 
   /**
@@ -32,13 +42,13 @@ class Consumer {
       if (err) {
         logger.error(`Consumer:${this.id}:${channelName}: Error while fetching transaction:${tmpMsg}\nerror:${err}`);
       }
-      logger.debug(`Consumer:${this.id}:${channelName} Processing request: ${JSON.parse(tmpMsg).id}`);
-      logger.debug(`Consumer:${this.id}:${channelName} Request: ${tmpMsg}`);
+      logger.debug(`Consumer:${this.id}:${channelName}: Processing request: ${JSON.parse(tmpMsg).id}`);
+      logger.debug(`Consumer:${this.id}:${channelName}: Request: ${tmpMsg}`);
       this.execute(err, [channelName, tmpMsg])
         .finally(this.waitAndExec.bind(this))
         .catch((ex) => {
-          logger.error(`Consumer:${this.id}:${channelName} Transaction failed: ${ex}`);
-          logger.error(`Consumer:${this.id}:${channelName} Failed to Handle Msg: ${tmpMsg}`);
+          logger.error(`Consumer:${this.id}:${channelName}: Transaction failed: ${ex}`);
+          logger.error(`Consumer:${this.id}:${channelName}: Failed to Handle Msg: ${tmpMsg}`);
           this.reportFailure(JSON.parse(tmpMsg).id, ex);
         });
     }
@@ -50,7 +60,7 @@ class Consumer {
      * @return {type}  description
      */
   waitAndExec() {
-    this.redis.blpop(this.queues, this.timeout, this.onRequest.bind(this));
+    if (!this.pause) this.redis.blpop(this.queues, this.timeout, this.onRequest.bind(this));
   }
 
   /**
