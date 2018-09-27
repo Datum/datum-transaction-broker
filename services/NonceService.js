@@ -3,6 +3,7 @@ const config = require('../utils/Config');
 const redisService = require('./RedisService');
 const logger = require('../utils/Logger');
 
+
 class NonceService {
 
   constructor() {
@@ -18,7 +19,7 @@ class NonceService {
      *
      * @param  {Array} accounts Array of accounts to calibrate nonces for
      */
-  async calibrateNonce(accounts) {
+  async calibrateNonce(accounts = config.accounts) {
     logger.debug('NonceService:calibrating nonces...');
     const promises = accounts.map(async (account) => {
       const pendingTxChannel = `${account.address}_pending`;

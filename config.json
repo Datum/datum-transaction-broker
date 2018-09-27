@@ -25,7 +25,8 @@
   ],
   "queues":{
     "transactions":"transactions",
-    "output":"pending_transactions"
+    "output":"pending_transactions",
+    "overseer":"overseer_commands"
   },
   "server":{
     "host":"localhost",
