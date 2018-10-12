@@ -5,7 +5,7 @@ let web3; let
   accounts;
 
 async function init() {
-  web3 = new Web3(new Web3.providers.HttpProvider('http://127.0.0.1:7545'));
+  web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8547'));
   accounts = await web3.eth.getAccounts();
 }
 
@@ -13,10 +13,14 @@ function toHex(v) {
   return web3.utils.toHex(v);
 }
 
+function getRandomArbitrary(min, max) {
+  return Math.floor(Math.random() * (max - min) + min);
+}
+
 function generateTx() {
   const toIndex = Math.floor(Math.random() * accounts.length);
   const rawTx = {
-    gasPrice: toHex('20000000000'),
+    gasPrice: toHex(`${getRandomArbitrary(3100000, 50000000000)}`),
     gasLimit: toHex('6721975'),
     to: accounts[toIndex],
     value: web3.utils.toHex((Math.floor(Math.random() * 10000000000))),
