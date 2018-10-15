@@ -47,7 +47,7 @@ class Consumer extends Slave {
       this.execute(err, [channelName, tmpMsg])
         .finally(this.waitAndExec.bind(this))
         .catch((ex) => {
-          logger.error(`Consumer:${this.id}:${channelName}: Transaction failed: ${ex}`);
+          logger.error(`Consumer:${this.id}:${channelName}: Transaction failed: -_- cake is a lie: ${ex}`);
           logger.error(`Consumer:${this.id}:${channelName}: Failed to Handle Msg: ${tmpMsg}`);
           this.reportFailure(JSON.parse(tmpMsg).id, ex);
         });
@@ -72,8 +72,8 @@ class Consumer extends Slave {
   isValidPayload(message) {
     try {
       return typeof message !== 'undefined'
-          && message !== null
-          && typeof JSON.parse(message).id !== 'undefined';
+          && message !== null;
+      // && typeof JSON.parse(message).id !== 'undefined';
     } catch (ex) {
       logger.error(`Failed to verify incoming request message ${message}\n${ex}`);
       return false;
