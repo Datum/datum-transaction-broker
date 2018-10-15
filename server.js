@@ -1,11 +1,11 @@
 
 const app = require('express')();
 const bodyParser = require('body-parser');
+const Web3 = require('web3');
 const config = require('./utils/Config');
 const logger = require('./utils/Logger');
 const txService = require('./services/TransactionService');
 const redisService = require('./services/RedisService');
-
 
 let redis;
 
@@ -52,6 +52,8 @@ app.post('/api/v1/transaction', (req, res) => {
               logger.debug(`Tx response:${reqID}:${msg}`);
               res.status(200).send(msg);
             }
+            // Delete temp key
+            redis.del(reqID);
           });
         });
     } else {
@@ -61,6 +63,29 @@ app.post('/api/v1/transaction', (req, res) => {
     const tmpBody = typeof (req.body) === 'object' ? JSON.stringify(req.body) : req.body;
     logger.error(`Failed to dispatch request: ${tmpBody}\n${err}`);
     res.status(400).send({ error: 'Invalid request: missing or invalid request values' });
+  }
+});
+
+
+function isValidHash(hash) {
+  return typeof hash !== 'undefined'
+  && hash !== null
+  && hash.length !== 0
+  && Web3.utils.isHexStrict(hash);
+}
+
+app.get('/api/v1/transaction/:txHash', async (req, res) => {
+  const { txHash } = req.params;
+  if (isValidHash(txHash)) {
+    const txStatus = await redis.get(txHash);
+    if (txStatus === null || typeof txStatus === 'undefined') {
+      res.status(400).send({ error: `Tx hash not found: ${txHash}` });
+    } else {
+      const status = (typeof txStatus === 'string') ? JSON.parse(txStatus) : txStatus;
+      res.status(200).send({ transacitonHash: txHash, ...status });
+    }
+  } else {
+    res.status(500).send({ error: `Invalid transaction hash: ${txHash}` });
   }
 });
 

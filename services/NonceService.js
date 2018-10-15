@@ -59,7 +59,7 @@ class NonceService {
     const nonce = await this.redis.rpop(this.listName(address));
     logger.debug(`NonceService::${address}:Current transaction count: ${nonce}`);
     this.redis.lindex(this.listName(address), 0)
-      .then(val => this.redis.lpush(this.listName(address), ++val));
+      .then(val => this.redis.lpush(this.listName(address), (val + 1)));
     return nonce;
   }
 

@@ -47,9 +47,8 @@ class Consumer extends Slave {
       this.execute(err, [channelName, tmpMsg])
         .finally(this.waitAndExec.bind(this))
         .catch((ex) => {
-          logger.error(`Consumer:${this.id}:${channelName}: Transaction failed: -_- cake is a lie: ${ex}`);
+          logger.error(`Consumer:${this.id}:${channelName}: Transaction failed: ${ex}`);
           logger.error(`Consumer:${this.id}:${channelName}: Failed to Handle Msg: ${tmpMsg}`);
-          this.reportFailure(JSON.parse(tmpMsg).id, ex);
         });
     }
   }
@@ -88,8 +87,14 @@ class Consumer extends Slave {
      * @return {Object}         promise
      */
   reportFailure(id, error) {
+    console.log(`\n\n\n\n\n${error}`);
     const failMsg = { status: false, error: error.message };
-    return this.redis.lpush([id], JSON.stringify(failMsg));
+    return this.updateTx([id], failMsg);
+  }
+
+  updateTx(id, status) {
+    console.log(`\n\n\n\n\n${status}`);
+    return this.redis.lpush([id], JSON.stringify(status));
   }
 
 }

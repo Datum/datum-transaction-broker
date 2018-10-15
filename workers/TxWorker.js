@@ -4,10 +4,15 @@ const Consumer = require('./Consumer');
 const nonceService = require('../services/NonceService');
 const web3Factory = require('../services/Web3Factory');
 const logger = require('../utils/Logger');
+const redisService = require('../services/RedisService');
+const { TxStatus } = require('../constants');
 
 class TxWorker {
 
   constructor(inputChannels, outputChannels, account) {
+    redisService.newRedis().then((redis) => {
+      this.redis = redis;
+    });
     this.consumer = new Consumer(inputChannels, this.execute.bind(this), account.address);
     this.publisher = new Publisher(outputChannels, account.address);
     this.web3 = web3Factory.getWeb3();
@@ -21,7 +26,8 @@ class TxWorker {
       const tmpTxId = msg.id;
       delete msg.id;
       const tx = await this.signTransaction(msg);
-      const txResult = await this.submitTx(tx.rawTx);
+      // Update transaction status
+      const txResult = await this.submitTx(tx.rawTx, tmpTxId);
       logger.debug(`TxWoker:${channelName}:${tx.transactionHash}:Transaction signed`);
       this.publisher.pushMsg(JSON.stringify({
         nonce: tx.nonce,
@@ -47,7 +53,10 @@ class TxWorker {
   async signTransaction(txObject) {
     const nonce = await nonceService.getNonce(this.account.address);
     const txObj = { ...txObject, nonce: this.web3.utils.toHex(nonce), from: this.account.address };
-    const tmpTx = new Tx(txObject);
+    logger.debug(`TxWorker:Signing Transaction: ${JSON.stringify(txObj)}`);
+
+    const tmpTx = new Tx(txObj);
+
     tmpTx.sign(Buffer.from(this.account.privateKey, 'hex'));
     return {
       txObj,
@@ -57,12 +66,30 @@ class TxWorker {
     };
   }
 
-  async submitTx(transaction) {
+  async submitTx(transaction, id, txHash) {
+    logger.debug(`TxWorker:Submitting Transaction:${id}:${transaction}`);
     return new Promise((resolve, reject) => {
       this.web3.eth.sendSignedTransaction(transaction)
-        .on('transactionHash', hash => resolve(hash))
-        .on('error', reject)
-        .catch(err => reject(err));
+        .on('transactionHash', (hash) => {
+          // Set to expire after 24 hours
+          this.redis.set(hash, JSON.stringify({ status: TxStatus.SUBMITTED }));
+          this.redis.lpush([id], JSON.stringify(
+            { status: TxStatus.SUBMITTED, transactionHash: hash },
+          ));
+          resolve(hash);
+        })
+        .on('receipt', (receipt) => {
+          this.redis.set(receipt.transactionHash, JSON.stringify({ status: 'mined' }));
+        })
+        .on('error', (err) => {
+          this.redis.lpush([id], JSON.stringify(
+            { error: (typeof err.message !== 'undefined' ? err.message : err) },
+          ));
+          this.redis.set(txHash, JSON.stringify(
+            { error: (typeof err.message !== 'undefined' ? err.message : err) },
+          ));
+          reject(err);
+        });
     });
   }
 
