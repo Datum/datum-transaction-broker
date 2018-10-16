@@ -81,6 +81,8 @@ app.get('/api/v1/transaction/:txHash', async (req, res) => {
     if (txStatus === null || typeof txStatus === 'undefined') {
       res.status(400).send({ error: `Tx hash not found: ${txHash}` });
     } else {
+      logger.debug(`Received status: ${txStatus}`);
+      logger.debug(`Received status: ${JSON.stringify(txStatus)}`);
       const status = (typeof txStatus === 'string') ? JSON.parse(txStatus) : txStatus;
       res.status(200).send({ transacitonHash: txHash, ...status });
     }
