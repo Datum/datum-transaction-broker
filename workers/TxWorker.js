@@ -3,10 +3,16 @@ const Publisher = require('./Publisher');
 const Consumer = require('./Consumer');
 const nonceService = require('../services/NonceService');
 const web3Factory = require('../services/Web3Factory');
+const logger = require('../utils/Logger');
+const redisService = require('../services/RedisService');
+const { TxStatus } = require('../constants');
 
 class TxWorker {
 
   constructor(inputChannels, outputChannels, account) {
+    redisService.newRedis().then((redis) => {
+      this.redis = redis;
+    });
     this.consumer = new Consumer(inputChannels, this.execute.bind(this), account.address);
     this.publisher = new Publisher(outputChannels, account.address);
     this.web3 = web3Factory.getWeb3();
@@ -15,19 +21,24 @@ class TxWorker {
 
   async execute(error, [channelName, message]) {
     try {
+      logger.debug(`TxWoker:${channelName}:${message}`);
       const msg = JSON.parse(message);
       const tmpTxId = msg.id;
       delete msg.id;
       const tx = await this.signTransaction(msg);
-      const signedTxRes = await this.web3.eth.sendSignedTransaction(tx.rawTx);
+      // Update transaction status
+      const txResult = await this.submitTx(tx.rawTx, tmpTxId);
+      logger.debug(`TxWoker:${channelName}:${tx.transactionHash}:Transaction signed`);
       this.publisher.pushMsg(JSON.stringify({
         nonce: tx.nonce,
-        signedTxRes,
+        transactionHash: tx.transactionHash,
         txObj: tx.txObj,
         id: tmpTxId,
         ts: new Date(),
+        txResult,
       }));
-      return Promise.resolve(signedTxRes);
+      logger.debug(`TxWoker:${channelName}:${tx.transactionHash}:Transaction submitted`);
+      return Promise.resolve(txResult);
     } catch (err) {
       return Promise.reject(err);
     }
@@ -41,15 +52,45 @@ class TxWorker {
      */
   async signTransaction(txObject) {
     const nonce = await nonceService.getNonce(this.account.address);
-    txObject.nonce = this.web3.utils.toHex(nonce);
-    txObject.from = this.account.address;
-    const tmpTx = new Tx(txObject);
+    const txObj = { ...txObject, nonce: this.web3.utils.toHex(nonce), from: this.account.address };
+    logger.debug(`TxWorker:Signing Transaction: ${JSON.stringify(txObj)}`);
+
+    const tmpTx = new Tx(txObj);
+
     tmpTx.sign(Buffer.from(this.account.privateKey, 'hex'));
     return {
-      txObj: txObject,
+      txObj,
       rawTx: `0x${tmpTx.serialize().toString('hex')}`,
       nonce,
+      transactionHash: `0x${tmpTx.hash().toString('hex')}`,
     };
+  }
+
+  async submitTx(transaction, id, txHash) {
+    logger.debug(`TxWorker:Submitting Transaction:${id}:${transaction}`);
+    return new Promise((resolve, reject) => {
+      this.web3.eth.sendSignedTransaction(transaction)
+        .on('transactionHash', (hash) => {
+          // Set to expire after 24 hours
+          this.redis.set(hash, JSON.stringify({ status: TxStatus.SUBMITTED }));
+          this.redis.lpush([id], JSON.stringify(
+            { status: TxStatus.SUBMITTED, transactionHash: hash },
+          ));
+          resolve(hash);
+        })
+        .on('receipt', (receipt) => {
+          this.redis.set(receipt.transactionHash, JSON.stringify({ status: 'mined' }));
+        })
+        .on('error', (err) => {
+          this.redis.lpush([id], JSON.stringify(
+            { error: (typeof err.message !== 'undefined' ? err.message : err) },
+          ));
+          this.redis.set(txHash, JSON.stringify(
+            { error: (typeof err.message !== 'undefined' ? err.message : err) },
+          ));
+          reject(err);
+        });
+    });
   }
 
 }

@@ -49,7 +49,6 @@ class Consumer extends Slave {
         .catch((ex) => {
           logger.error(`Consumer:${this.id}:${channelName}: Transaction failed: ${ex}`);
           logger.error(`Consumer:${this.id}:${channelName}: Failed to Handle Msg: ${tmpMsg}`);
-          this.reportFailure(JSON.parse(tmpMsg).id, ex);
         });
     }
   }
@@ -72,8 +71,8 @@ class Consumer extends Slave {
   isValidPayload(message) {
     try {
       return typeof message !== 'undefined'
-          && message !== null
-          && typeof JSON.parse(message).id !== 'undefined';
+          && message !== null;
+      // && typeof JSON.parse(message).id !== 'undefined';
     } catch (ex) {
       logger.error(`Failed to verify incoming request message ${message}\n${ex}`);
       return false;
@@ -88,8 +87,14 @@ class Consumer extends Slave {
      * @return {Object}         promise
      */
   reportFailure(id, error) {
+    console.log(`\n\n\n\n\n${error}`);
     const failMsg = { status: false, error: error.message };
-    return this.redis.lpush([id], JSON.stringify(failMsg));
+    return this.updateTx([id], failMsg);
+  }
+
+  updateTx(id, status) {
+    console.log(`\n\n\n\n\n${status}`);
+    return this.redis.lpush([id], JSON.stringify(status));
   }
 
 }

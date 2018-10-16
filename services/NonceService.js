@@ -25,16 +25,27 @@ class NonceService {
       const pendingTxChannel = `${account.address}_pending`;
       const pendingNonce = await this.getLastPendingNonce(pendingTxChannel);
       const tmpn = await this.web3.eth.getTransactionCount(account.address, 'pending');
-      logger.debug(`NonceService::Calibrating ${account.address}\nLast Pending Nonce:${pendingNonce}\nTransaction Count:${tmpn}`);
+      const transactionCount = await this.web3.eth.getTransactionCount(account.address);
+      logger.debug(`NonceService::Calibrating:${account.address}`);
+      logger.debug(`NonceService::Calibrating:Transaction count:${transactionCount}`);
+      logger.debug(`NonceService::Calibrating:Pending Transaction count:${tmpn}`);
+      logger.debug(`NonceService::Calibrating:Local Pending Transactions:${pendingNonce}`);
       return this.fillNonce(this.listName(account.address), tmpn, pendingNonce);
     });
     await Promise.all(promises);
   }
 
+
+  /**
+   * async getLastPendingNonce - Check nonce value in last pending transaction
+   *
+   * @param  {String} channel Pending transactions channel
+   * @return {Integer} Last pending transaction nonce
+   */
   async getLastPendingNonce(channel) {
     const len = await this.redis.llen(channel);
     const tx = await this.redis.lindex(channel, len - 1);
-    const nonce = tx !== null && typeof tx.nonce !== 'undefined' ? tx.nonce : 0;
+    const nonce = (tx !== null && typeof tx.nonce !== 'undefined') ? tx.nonce : 0;
     return nonce;
   }
 
@@ -48,7 +59,7 @@ class NonceService {
     const nonce = await this.redis.rpop(this.listName(address));
     logger.debug(`NonceService::${address}:Current transaction count: ${nonce}`);
     this.redis.lindex(this.listName(address), 0)
-      .then(val => this.redis.lpush(this.listName(address), ++val));
+      .then(val => this.redis.lpush(this.listName(address), (val + 1)));
     return nonce;
   }
 
@@ -65,16 +76,23 @@ class NonceService {
      * @return {void}
      */
   async fillNonce(listName, transactionCount, pendingNonce) {
+    const results = [];
     let startingNonce = this.getStartingNonce(transactionCount, pendingNonce);
     let lstLen = 0;
-    await this.redis.del(listName);
-    while (lstLen < 60) {
-      await this.redis.lpush(listName, startingNonce);
-      startingNonce += 1;
-      lstLen += 1;
+    await this.redis.del(listName); // First delete prev nonce list
+    for (;lstLen < 60; startingNonce += 1, lstLen += 1) {
+      results.push(this.redis.lpush(listName, startingNonce));
     }
+    return Promise.all(results);
   }
 
+  /**
+   * getStartingNonce - Return last nonce we should start from
+   *
+   * @param  {Integer} txCount = 0      Transaction count as resported by network
+   * @param  {Integer} pendingNonce = 0 Last pending transaction nonce
+   * @return {Integer} starting nonce
+   */
   getStartingNonce(txCount = 0, pendingNonce = 0) {
     const tmp = [txCount, pendingNonce];
     return tmp.sort()[tmp.length - 1];
