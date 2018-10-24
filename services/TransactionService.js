@@ -1,11 +1,11 @@
 const uuid = require('uuid/v1');
 const Web3 = require('web3');
+const config = require('config');
 const logger = require('../utils/Logger');
 const Publisher = require('../workers/Publisher');
 const TxWorker = require('../workers/TxWorker');
 const StatusWorker = require('../workers/StatusWorker');
 const Overseer = require('../workers/Overseer');
-const config = require('../utils/Config');
 /**
  * Transaction service
  */
