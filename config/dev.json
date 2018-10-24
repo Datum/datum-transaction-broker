@@ -4,9 +4,7 @@
     "port":6379
   },
   "web3":{
-    "provider":"http://127.0.0.1:8545",
-    "ganache_provider":"http://127.0.0.1:7545",
-    "local_eth_provider":"http://localhost:8547"
+    "provider":"http://127.0.0.1:8545"
   },
   "accounts":[
     {"privateKey":"aa1fd63e2cc17d3441fe86def8825508df41ece81b7561f1580cdd9745383207","address":"0x7e093712d0d2709dec8e06022b1b80722693b238"}  
