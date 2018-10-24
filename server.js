@@ -33,11 +33,12 @@ function isValidBody(body) {
 }
 
 function toObj(body) {
-  return typeof body === 'string' ? JSON.stringify(body) : body;
+  return typeof body === 'string' ? JSON.parse(body) : body;
 }
 
 app.post('/api/v1/transaction', (req, res) => {
   try {
+    logger.debug(`Incoming tx request: ${req.body}`);
     const body = toObj(req.body);
     logger.debug(`Incoming tx request: ${JSON.stringify(body)}`);
     if (isValidBody(body)) {
