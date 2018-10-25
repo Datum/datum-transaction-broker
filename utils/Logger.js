@@ -1,4 +1,5 @@
 const path = require('path');
+const config = require('config');
 const winston = require('winston');
 require('winston-daily-rotate-file');
 
@@ -28,7 +29,7 @@ const logger = winston.createLogger({
     loggerFormat,
   ),
   transports: [
-    transport, new winston.transports.Console({ level: 'debug' }),
+    transport, new winston.transports.Console({ level: config.logger.level }),
   ],
 });
 
