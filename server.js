@@ -97,5 +97,5 @@ redisService.newRedis().then((red) => {
   logger.debug(`Successfully connected to redis:${redis.id}`);
 
   const port = process.env.PORT || config.server.port;
-  app.listen(port, config.server.host, () => logger.info(`Server is up and running Socket:${config.server.host}:${port}`));
+  app.listen(port, () => logger.info(`Server is up and running at port ${port}`));
 });
