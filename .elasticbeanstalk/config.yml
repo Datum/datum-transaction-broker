@@ -1,15 +1,15 @@
 branch-defaults:
   deployment:
-    environment: datum-transaction-broker-dev
+    environment: transaction-broker-dev
 environment-defaults:
-  datum-transaction-broker-dev:
+  transaction-broker-dev:
     branch: null
     repository: null
 global:
   application_name: datum-transaction-broker
   default_ec2_keyname: datum
-  default_platform: arn:aws:elasticbeanstalk:ap-southeast-1::platform/Node.js running
-    on 64bit Amazon Linux/4.5.4
+  default_platform: arn:aws:elasticbeanstalk:ap-southeast-1::platform/Docker running
+    on 64bit Amazon Linux/2.12.3
   default_region: ap-southeast-1
   include_git_submodules: true
   instance_profile: null
