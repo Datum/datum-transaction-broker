@@ -44,13 +44,15 @@ class Consumer extends Slave {
       }
       logger.debug(`Consumer:${this.id}:${channelName}: Processing request: ${JSON.parse(tmpMsg).id}`);
       logger.debug(`Consumer:${this.id}:${channelName}: Request: ${tmpMsg}`);
-      this.execute(err, [channelName, tmpMsg])
-        .finally(this.waitAndExec.bind(this))
-        .catch((ex) => {
-          logger.error(`Consumer:${this.id}:${channelName}: Transaction failed: ${ex}`);
-          logger.error(`Consumer:${this.id}:${channelName}: Failed to Handle Msg: ${tmpMsg}`);
-        });
+      try {
+        const result = await this.execute(err, [channelName, tmpMsg]);
+        logger.debug(`Consumer:${this.id}:${channelName}: Execution results: ${result}`);
+      } catch (ex) {
+        logger.error(`Consumer:${this.id}:${channelName}: Transaction failed: ${ex}`);
+        logger.error(`Consumer:${this.id}:${channelName}: Failed to Handle Msg: ${tmpMsg}`);
+      }
     }
+    this.waitAndExec();
   }
 
   /**
@@ -87,13 +89,11 @@ class Consumer extends Slave {
      * @return {Object}         promise
      */
   reportFailure(id, error) {
-    console.log(`\n\n\n\n\n${error}`);
     const failMsg = { status: false, error: error.message };
     return this.updateTx([id], failMsg);
   }
 
   updateTx(id, status) {
-    console.log(`\n\n\n\n\n${status}`);
     return this.redis.lpush([id], JSON.stringify(status));
   }
 

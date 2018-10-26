@@ -7,6 +7,7 @@ const logger = require('./utils/Logger');
 const txService = require('./services/TransactionService');
 const redisService = require('./services/RedisService');
 
+
 let redis;
 
 /**
@@ -27,13 +28,14 @@ function isEmpty(v) {
 
 function isValidBody(body) {
   return !isEmpty(body)
-     && !isEmpty(body.to)
-     && !isEmpty(body.gasPrice)
-     && !isEmpty(body.gasLimit);
+  && !isEmpty(body.data)
+  && !isEmpty(body.to);
+  // && !isEmpty(body.gasPrice)
+  // && !isEmpty(body.gasLimit);
 }
 
 function toObj(body) {
-  return typeof body === 'string' ? JSON.stringify(body) : body;
+  return typeof body === 'string' ? JSON.parse(body) : body;
 }
 
 app.post('/api/v1/transaction', (req, res) => {

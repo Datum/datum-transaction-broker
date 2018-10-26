@@ -1,10 +1,13 @@
+
 const Tx = require('ethereumjs-tx');
 const Publisher = require('./Publisher');
 const Consumer = require('./Consumer');
+
 const nonceService = require('../services/NonceService');
 const web3Factory = require('../services/Web3Factory');
 const logger = require('../utils/Logger');
 const redisService = require('../services/RedisService');
+
 const { TxStatus } = require('../constants');
 
 class TxWorker {
@@ -39,9 +42,19 @@ class TxWorker {
       }));
       logger.debug(`TxWoker:${channelName}:${tx.transactionHash}:Transaction submitted`);
       return Promise.resolve(txResult);
+
+      // return Promise.resolve('0x3ccd71d14ceade7e31d8967e4043f6947220e423bf2f3f9bb6a591912d9fd487');
     } catch (err) {
+      this.examinError(err);
       return Promise.reject(err);
     }
+  }
+
+  examinError(ex) {
+    // Returned error: nonce too low
+    // Returned error: replacement transaction underpriced
+    const message = typeof ex === 'string' ? ex : ex.message;
+    console.log(`=>>>>>${message}`);
   }
 
   /**
@@ -52,7 +65,15 @@ class TxWorker {
      */
   async signTransaction(txObject) {
     const nonce = await nonceService.getNonce(this.account.address);
-    const txObj = { ...txObject, nonce: this.web3.utils.toHex(nonce), from: this.account.address };
+
+    const txObj = {
+      ...txObject,
+      gas: this.web3.utils.toHex(6000000),
+      gasPrice: this.web3.utils.toHex(9000000000),
+      nonce: this.web3.utils.toHex(nonce),
+      from: this.account.address,
+    };
+
     logger.debug(`TxWorker:Signing Transaction: ${JSON.stringify(txObj)}`);
 
     const tmpTx = new Tx(txObj);
