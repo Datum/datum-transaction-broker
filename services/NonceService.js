@@ -1,5 +1,5 @@
+const config = require('config');
 const Web3Factory = require('./Web3Factory');
-const config = require('../utils/Config');
 const redisService = require('./RedisService');
 const logger = require('../utils/Logger');
 

@@ -2,7 +2,7 @@
 const app = require('express')();
 const bodyParser = require('body-parser');
 const Web3 = require('web3');
-const config = require('./utils/Config');
+const config = require('config');
 const logger = require('./utils/Logger');
 const txService = require('./services/TransactionService');
 const redisService = require('./services/RedisService');
@@ -95,5 +95,7 @@ logger.debug('Connecting to local redis...');
 redisService.newRedis().then((red) => {
   redis = red;
   logger.debug(`Successfully connected to redis:${redis.id}`);
-  app.listen(config.server.port, config.server.host, () => logger.info(`Server is up and running Socket:${config.server.host}:${config.server.port}`));
+
+  const port = process.env.PORT || config.server.port;
+  app.listen(port, () => logger.info(`Server is up and running at port ${port}`));
 });
