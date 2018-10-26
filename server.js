@@ -28,8 +28,8 @@ function isEmpty(v) {
 
 function isValidBody(body) {
   return !isEmpty(body)
-  && !isEmpty(body.data);
-  // && !isEmpty(body.to)
+  && !isEmpty(body.data)
+  && !isEmpty(body.to);
   // && !isEmpty(body.gasPrice)
   // && !isEmpty(body.gasLimit);
 }

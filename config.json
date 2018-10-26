@@ -4,12 +4,12 @@
     "port":6379
   },
   "web3":{
-    "provider":"http://127.0.0.1:8545",
+    "provider":"https://node-5.megatron.datum.org/api",
     "ganache_provider":"http://127.0.0.1:7545",
-    "local_eth_provider":"http://localhost:8547"
+    "test_net":"https://node-5.megatron.datum.org/api"
   },
   "accounts":[
-    {"privateKey":"aa1fd63e2cc17d3441fe86def8825508df41ece81b7561f1580cdd9745383207","address":"0x7e093712d0d2709dec8e06022b1b80722693b238"}  
+    {"privateKey":"02cdeeb82038437c1724fa8240833d617d2ad5b3f32a28c24106a36143bcf0cd","address":"0xd1c34f4a6b1183d61f71ce625e686df8ab85dd03"}
   ],
   "accounts_ganaceh_cli":[
     {
