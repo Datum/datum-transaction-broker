@@ -7,6 +7,7 @@ const logger = require('./utils/Logger');
 const txService = require('./services/TransactionService');
 const redisService = require('./services/RedisService');
 
+
 let redis;
 
 /**
@@ -27,9 +28,10 @@ function isEmpty(v) {
 
 function isValidBody(body) {
   return !isEmpty(body)
-     && !isEmpty(body.to)
-     && !isEmpty(body.gasPrice)
-     && !isEmpty(body.gasLimit);
+  && !isEmpty(body.data);
+  // && !isEmpty(body.to)
+  // && !isEmpty(body.gasPrice)
+  // && !isEmpty(body.gasLimit);
 }
 
 function toObj(body) {
@@ -38,7 +40,6 @@ function toObj(body) {
 
 app.post('/api/v1/transaction', (req, res) => {
   try {
-    logger.debug(`Incoming tx request: ${req.body}`);
     const body = toObj(req.body);
     logger.debug(`Incoming tx request: ${JSON.stringify(body)}`);
     if (isValidBody(body)) {
