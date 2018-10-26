@@ -1,5 +1,4 @@
 const Web3Factory = require('../services/Web3Factory');
-const nonceService = require('../services/NonceService');
 const Consumer = require('./Consumer');
 const Publisher = require('./Publisher');
 const redisService = require('../services/RedisService');
@@ -24,18 +23,10 @@ class StatusWorker {
     if (!this.isNull(txReceipt)) {
       logger.debug(`StatusWorker:${channelName}:Transaction executed: ${tmpTx.id}: ${tx}`);
       return this.redis.set(tmpTx.transactionHash, { status: 'mined' });
-    } if (this.isNull(txReceipt) && this.shouldResubmit(tmpTx.ts)) {
-      logger.debug(`StatusWorker:${channelName}:Resubmitting Transaction:${tmpTx.id}`);
-      logger.debug(`StatusWorker:${channelName}:${tmpTx.id}: ${tx}`);
-      return this.redis.set(tmpTx.transactionHash, { error: 'Transaction has been pending for too long' });
-      // TODO: define a better resubmittion startgy
-      // TODO: With resubmittion we need to have abiility to cancel
-      // return this.resubmitTx(tmpTx);
-    } if (this.isNull(txReceipt)) {
-      logger.debug(`StatusWorker:${channelName}:Submitting Transaction for recheck:${tmpTx.id}`);
-      logger.debug(`StatusWorker:${channelName}:${tmpTx.id}: ${tx}`);
-      return this.submitToRecheck(tx);
     }
+    logger.debug(`StatusWorker:${channelName}:Submitting Transaction for recheck:${tmpTx.id}`);
+    logger.debug(`StatusWorker:${channelName}:${tmpTx.id}: ${tx}`);
+    return this.submitToRecheck(tx);
   }
 
   isNull(obj) {
@@ -44,14 +35,6 @@ class StatusWorker {
 
   submitToRecheck(tx) {
     return this.reCheckWroker.pushMsg(tx);
-  }
-
-  resubmitTx(tx) {
-    const tmpTx = { ...tx.txObj };
-    nonceService.replayNonce(tmpTx.from, tmpTx.nonce);
-    delete tmpTx.from;
-    delete tmpTx.nonce;
-    return this.resubmitTxWorker.pushMsg(JSON.stringify(tmpTx));
   }
 
   shouldResubmit(ts) {
