@@ -6,50 +6,6 @@
   "web3":{
     "provider":"https://node-5.megatron.datum.org/api"
   },
-  "accounts":[
-    {"privateKey":"aa1fd63e2cc17d3441fe86def8825508df41ece81b7561f1580cdd9745383207","address":"0x7e093712d0d2709dec8e06022b1b80722693b238"}  
-  ],
-  "accounts_ganaceh_cli":[
-    {
-      "privateKey":"cda025772086c355d0b9c8df137c570776f9410ffcb5a47c5caa8f5cb92853ab",
-      "address":"0x95605d7ac53776ead30201ea7dbd0b5b276074dc"
-    },{
-      "privateKey":"24060937aaf7f8458d696dd7ac599f9faab17605daab57c658e574ad6841b437",
-      "address":"0xa1c57d6b0cdee1578b1264ade767a57115eea4fe"
-    },
-    {
-      "privateKey":"03c12c25922d53c863b0939b8b5114dd506807396651d7f5bda17ca7ae8b835c",
-      "address":"0x68714a7a0dee6a97980ba2deed7bd59351447a57"
-    },
-    {
-      "privateKey":"3dc13b0b0b27fd39a8d8a827de9bcf65481ac7afda9466c025de1d4c5f4688a2",
-      "address":"0xac2b1e6bddd1b2a5c929edee8728227143687470"
-    }
-  ],
-  "accounts_ganache_UI":[
-    {
-      "privateKey":"4f69c19ba225f3bf4aa09086981ad9c47703780c8c720f717ba22d077f6926e3",
-      "address":"0xa8019d775eFa0a6dc0A42a4Cc5D13f230DA47905"
-    },{
-      "privateKey":"8f6a6d66370399902f0e096a2997f08f7a570dc8beea1cff594448ce9c0771b8",
-      "address":"0x06D3C98F391d32Fa2e857fE2ddc3Ef74f5c2C921"
-    },
-    {
-      "privateKey":"67ee35358bc785dfc37a3190d80e0e7ac8f02a1d1b07196a7ea817163bfd4923",
-      "address":"0x0ac477b09be7e7A2d616A23234ed2Ecb41a57CED"
-    },
-    {
-      "privateKey":"5d33d1e811b178d5b079ca74a70e42da3af1711f48e16d24e7e9084f224960b0",
-      "address":"0x16eaBE188C7544c6C766DcD03f86713Ca10dD9A7"
-    },
-    {"privateKey":"bc5b578e0dcb2dbf98dd6e5fe62cb5a28b84a55e15fc112d4ca88e1f62bd7c35","address":"0x3590aca93338b0721966a8d0c96ebf2c4c87c544"},
-    {"privateKey":"df504d175ae63abf209bad9dda965310d99559620550e74521a6798a41215f46","address":"0x8cc5a1a0802db41db826c2fcb72423744338dcb0"}
-  ],
-  "queues":{
-    "transactions":"transactions",
-    "output":"pending_transactions",
-    "overseer":"overseer_commands"
-  },
   "server":{
     "port":8081
   },
