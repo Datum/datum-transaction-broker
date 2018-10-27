@@ -3,10 +3,10 @@ const app = require('express')();
 const bodyParser = require('body-parser');
 const Web3 = require('web3');
 const config = require('config');
+const cors = require('cors');
 const logger = require('./utils/Logger');
 const txService = require('./services/TransactionService');
 const redisService = require('./services/RedisService');
-
 
 let redis;
 
@@ -21,7 +21,7 @@ txService.start();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
+app.use(cors());
 function isEmpty(v) {
   return typeof (v) === 'undefined' || v === null || v === '';
 }
