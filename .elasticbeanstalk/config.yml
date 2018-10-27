@@ -1,6 +1,8 @@
 branch-defaults:
   deployment:
     environment: datum-transaction-broker-dev
+  develop:
+    environment: datum-transaction-broker-dev
 environment-defaults:
   datum-transaction-broker-dev:
     branch: null
