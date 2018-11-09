@@ -74,5 +74,9 @@ Responsible of :
 
 2. Run `eb deploy`
 
+Deployed servers can be accessed by ec2 instances within the same VPC only, using internal domain names.
+`datum-transaction-broker-dev` can be accessed with `transaction-broker.datum-aws-private.dev`
+`datum-transaction-broker-prod` can be accessed with `transaction-broker.datum-aws-private.prod`
+
 ____
 _Project is still under development, though the remaining effort is not much but in now way it should be used in production environment since this service is meant to serve high load, and require proper testing_
