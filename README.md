@@ -66,6 +66,13 @@ Responsible of :
 2) If transaction is pending for too long (time limit is defined when we initialise the worker instance) then it will __replay the transaction nonce and resubmit raw transaction object to be resubmitting again by transaction workers__
 3) If Status worker received a receipt for the transaction hash, it will mark it as complete and send the hash back as response to the requester
 
+### Deployment
+
+1. Checkout one of following branches to deploy the app to corresponding environment
+- `master` branch will be deployed to `datum-transaction-broker-prod`
+- `develop` branch will be deployed to `datum-transaction-broker-dev`
+
+2. Run `eb deploy`
 
 ____
 _Project is still under development, though the remaining effort is not much but in now way it should be used in production environment since this service is meant to serve high load, and require proper testing_

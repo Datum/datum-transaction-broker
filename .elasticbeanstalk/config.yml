@@ -1,10 +1,13 @@
 branch-defaults:
-  deployment:
-    environment: datum-transaction-broker-dev
   develop:
     environment: datum-transaction-broker-dev
+  master:
+    environment: datum-transaction-broker-prod
 environment-defaults:
   datum-transaction-broker-dev:
+    branch: null
+    repository: null
+  datum-transaction-broker-prod:
     branch: null
     repository: null
 global:
