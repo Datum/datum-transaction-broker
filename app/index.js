@@ -36,10 +36,10 @@ const createApp = (services) => {
             redis.blpop([reqID], 0, (err, [channelName, msg]) => {
               if (err) {
                 logger.error(`${channelName}:Failed to process tx: ${reqID}\n${err}`);
-                res.status(500).send({ error: 'Transaction failed to process' });
+                res.status(500).json({ error: 'Transaction failed to process' });
               } else {
                 logger.debug(`Tx response:${reqID}:${msg}`);
-                res.status(200).send(msg);
+                res.status(200).json(msg);
               }
               // Delete temp key
               redis.del(reqID);
@@ -51,7 +51,7 @@ const createApp = (services) => {
     } catch (err) {
       const tmpBody = typeof (req.body) === 'object' ? JSON.stringify(req.body) : req.body;
       logger.error(`Failed to dispatch request: ${tmpBody}\n${err}`);
-      res.status(400).send({ error: 'Invalid request: missing or invalid request values' });
+      res.status(400).json({ error: 'Invalid request: missing or invalid request values' });
     }
   });
 
