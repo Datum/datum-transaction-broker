@@ -7,7 +7,7 @@
     "provider":"https://node-5.megatron.datum.org/api"
   },
   "accounts":[
-    {"privateKey":"34e2afd7c259afe0361b7db8a893d05d59d2c9e5398016f286efd4b510eaab35","address":"0x0b148878a09c7e83e570d80231f22a30af24f6a4"}
+    {"privateKey":"8cffcbbd915822b26a8e09bfa20380e19238955bd2aa7f586666685145bd33f4","address":"0xb01037e34c1419f794c1a0ae361d160ac6414858"}
   ],
   "queues":{
     "transactions":"transactions",
