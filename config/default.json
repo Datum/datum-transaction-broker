@@ -1,0 +1,23 @@
+{
+  "redis":{
+    "host":"127.0.0.1",
+    "port":6379
+  },
+  "web3":{
+    "provider":"https://node-5.megatron.datum.org/api"
+  },
+  "accounts":[
+    {"privateKey":"8cffcbbd915822b26a8e09bfa20380e19238955bd2aa7f586666685145bd33f4","address":"0xb01037e34c1419f794c1a0ae361d160ac6414858"}
+  ],
+  "queues":{
+    "transactions":"transactions",
+    "output":"pending_transactions",
+    "overseer":"overseer_commands"
+  },
+  "server":{
+    "port":3000
+  },
+  "logger": {
+    "level": "debug"
+  }
+}

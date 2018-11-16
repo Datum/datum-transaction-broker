@@ -1,10 +1,11 @@
 const uuid = require('uuid/v1');
 const Web3 = require('web3');
+const config = require('config');
 const logger = require('../utils/Logger');
 const Publisher = require('../workers/Publisher');
 const TxWorker = require('../workers/TxWorker');
 const StatusWorker = require('../workers/StatusWorker');
-const config = require('../utils/Config');
+const Overseer = require('../workers/Overseer');
 /**
  * Transaction service
  */
@@ -14,6 +15,7 @@ class TransactionService {
     this.dispatcher = new Publisher([config.queues.transactions], 'transaction_dispatcher');
     this.txWorkers = {};
     this.statusWorkers = {};
+    this.overseer = undefined;
   }
 
   start() {
@@ -22,6 +24,7 @@ class TransactionService {
       this.txWorkers[account.address] = new TxWorker([config.queues.transactions], [`${account.address}_pending`], account);
       this.statusWorkers[account.address] = new StatusWorker([`${account.address}_pending`], [config.queues.transactions]);
     });
+    this.overseer = new Overseer(config.queues.overseer);
   }
 
   dispatch(request) {

@@ -1,6 +1,6 @@
 const Redis = require('ioredis');
 const uuid = require('uuid/v1');
-const config = require('../utils/Config');
+const config = require('config');
 
 class RedisService {
 
