@@ -2,7 +2,7 @@ branch-defaults:
   develop:
     environment: datum-transaction-broker-dev
   master:
-    environment: datum-transaction-broker-prod
+    environment: datum-transaction-broker-prod-3
 environment-defaults:
   datum-transaction-broker-dev:
     branch: null
