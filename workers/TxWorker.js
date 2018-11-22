@@ -12,7 +12,7 @@ const { TxStatus } = require('../constants');
 
 class TxWorker {
 
-  constructor(inputChannels, outputChannels, account) {
+  constructor(inputChannels, outputChannels, account, minBalance = 1000) {
     redisService.newRedis().then((redis) => {
       this.redis = redis;
     });
@@ -20,10 +20,12 @@ class TxWorker {
     this.publisher = new Publisher(outputChannels, account.address);
     this.web3 = web3Factory.getWeb3();
     this.account = account;
+    this.minBalance = minBalance;
   }
 
   async execute(error, [channelName, message]) {
     try {
+      this.checkBalance();
       logger.debug(`TxWoker:${channelName}:${message}`);
       const msg = JSON.parse(message);
       const tmpTxId = msg.id;
@@ -42,19 +44,17 @@ class TxWorker {
       }));
       logger.debug(`TxWoker:${channelName}:${tx.transactionHash}:Transaction submitted`);
       return Promise.resolve(txResult);
-
-      // return Promise.resolve('0x3ccd71d14ceade7e31d8967e4043f6947220e423bf2f3f9bb6a591912d9fd487');
     } catch (err) {
       this.examinError(err);
       return Promise.reject(err);
     }
   }
 
-  examinError(ex) {
-    // Returned error: nonce too low
-    // Returned error: replacement transaction underpriced
-    const message = typeof ex === 'string' ? ex : ex.message;
-    console.log(`=>>>>>${message}`);
+  async checkBalance() {
+    const balance = await this.web3.eth.getBalance(this.account.address);
+    if (this.web3.utils.fromWei(balance) < this.minBalance) {
+      throw new Error(`Insuffecient Balance, Account: ${this.account.address}, current balance: ${balance}`);
+    }
   }
 
   /**
