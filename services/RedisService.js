@@ -8,17 +8,33 @@ class RedisService {
     this.instances = {};
   }
 
+  async getRedisInstance() {
+    let tmpRedis;
+    if (this.isProd()) {
+      tmpRedis = await new Redis.Cluster([
+        config.redis,
+      ]);
+    } else {
+      tmpRedis = await new Redis(config.redis);
+    }
+    return tmpRedis;
+  }
+
   async newRedis() {
     const tmpid = uuid();
-    const tmpRedis = await new Redis(config.redis);
+    const tmpRedis = await this.getRedisInstance();
     this.instances[tmpid] = tmpRedis;
     tmpRedis.id = tmpid;
     return tmpRedis;
   }
 
+  isProd() {
+    return process.env.NODE_ENV === 'prod';
+  }
+
   async getDefaultRedis() {
     if (typeof this.instances.default === 'undefined') {
-      const tmpRedis = await new Redis(config.redis);
+      const tmpRedis = await this.getRedisInstance();
       this.instances.default = tmpRedis;
       return tmpRedis;
     }
