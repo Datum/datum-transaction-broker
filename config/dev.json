@@ -1,15 +1,1 @@
-{
-  "redis":{
-    "host":"kl-test.ddktsn.0001.apse1.cache.amazonaws.com",
-    "port":6379
-  },
-  "web3":{
-    "provider":"https://node-5.megatron.datum.org/api"
-  },
-  "server":{
-    "port":8081
-  },
-  "logger": {
-    "level": "debug"
-  }
-}
+{"redis":{"host":"1fa17078b8e8f77758ecbfc4bc423d38e2b1d3adf384703ab2f6abbbdbb1a3afe23b9277b780dd5ae2e8c8918c9e1040","port":"02f3974c9fee98177d7c96d2569c03f9"},"web3":{"provider":"b854ede753fc460e10ec05a38473c0fe055d3fc538ab06821dd7020e5a4c886bc378b7fa2469f75442879b4d60ef5011"},"server":{"port":"3e252bcdd80faa01fb6fa039c7e470c2"},"logger":{"level":"4a42feaa685839b3fb54df558d4b9989"}}
