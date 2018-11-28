@@ -12,7 +12,7 @@ class EncConfig {
       throw new Error('Configurations files are not found');
     }
 
-    if (this.ENC_KEY === undefined) {
+    if (this.ENC_KEY === undefined || this.ENC_KEY.length === 0) {
       throw new Error('Encryption key must be initiliazed in production');
     }
 
@@ -141,5 +141,13 @@ class EncConfig {
   }
 
 }
-const encConfig = new EncConfig();
-module.exports = encConfig.getConfigProxy();
+function getConfig() {
+  if (process.env.NODE_ENV === 'prod') {
+    const encConfig = new EncConfig();
+    return encConfig.getConfigProxy();
+  }
+  return require('config');
+}
+
+const config = getConfig();
+module.exports = config;
