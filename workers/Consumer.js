@@ -34,24 +34,27 @@ class Consumer extends Slave {
      * @param  {type} payload      Incoming payload
      * @param  {type} next         function to get exeucted after onRequest is done
      */
-  async onRequest(err, [channelName, message]) {
-    const tmpMsg = typeof (message) === 'object' ? JSON.stringify(message) : message;
-    if (!this.isValidPayload(tmpMsg)) {
-      logger.error(`Consumer:${this.id}:${channelName}: Invalid payload ${tmpMsg}`);
+  async onRequest(err, payload) {
+    if (err || payload === undefined || !Array.isArray(payload)) {
+      logger.error(`Consumer:${this.id}: Error while fetching transaction:${payload}\nerror:${err}`);
     } else {
-      if (err) {
-        logger.error(`Consumer:${this.id}:${channelName}: Error while fetching transaction:${tmpMsg}\nerror:${err}`);
-      }
-      logger.debug(`Consumer:${this.id}:${channelName}: Processing request: ${JSON.parse(tmpMsg).id}`);
-      logger.debug(`Consumer:${this.id}:${channelName}: Request: ${tmpMsg}`);
-      try {
-        const result = await this.execute(err, [channelName, tmpMsg]);
-        logger.debug(`Consumer:${this.id}:${channelName}: Execution results: ${result}`);
-      } catch (ex) {
-        logger.error(`Consumer:${this.id}:${channelName}: Transaction failed: ${ex}`);
-        logger.error(`Consumer:${this.id}:${channelName}: Failed to Handle Msg: ${tmpMsg}`);
+      const [channelName, message] = payload;
+      const tmpMsg = typeof (message) === 'object' ? JSON.stringify(message) : message;
+      if (!this.isValidPayload(tmpMsg)) {
+        logger.error(`Consumer:${this.id}:${channelName}: Invalid payload ${tmpMsg}`);
+      } else {
+        logger.debug(`Consumer:${this.id}:${channelName}: Processing request: ${JSON.parse(tmpMsg).id}`);
+        logger.debug(`Consumer:${this.id}:${channelName}: Request: ${tmpMsg}`);
+        try {
+          const result = await this.execute(err, [channelName, tmpMsg]);
+          logger.debug(`Consumer:${this.id}:${channelName}: Execution results: ${result}`);
+        } catch (ex) {
+          logger.error(`Consumer:${this.id}:${channelName}: Transaction failed: ${ex}`);
+          logger.error(`Consumer:${this.id}:${channelName}: Failed to Handle Msg: ${tmpMsg}`);
+        }
       }
     }
+
     this.waitAndExec();
   }
 
