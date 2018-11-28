@@ -1,6 +1,6 @@
 const uuid = require('uuid/v1');
 const Web3 = require('web3');
-const config = require('config');
+const config = require('./ConfigService');
 const logger = require('../utils/Logger');
 const Publisher = require('../workers/Publisher');
 const TxWorker = require('../workers/TxWorker');

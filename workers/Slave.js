@@ -1,5 +1,5 @@
 
-const config = require('config');
+const config = require('../services/ConfigService');
 const COMMANDS = require('../constants');
 const redisService = require('../services/RedisService');
 const logger = require('../utils/Logger');

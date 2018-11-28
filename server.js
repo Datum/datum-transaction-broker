@@ -1,4 +1,4 @@
-const config = require('config');
+const config = require('./services/ConfigService');
 const logger = require('./utils/Logger');
 const txService = require('./services/TransactionService');
 const redisService = require('./services/RedisService');
