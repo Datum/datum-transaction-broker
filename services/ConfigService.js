@@ -5,7 +5,7 @@ const path = require('path');
 class EncConfig {
 
   constructor() {
-    this.env = process.env.NODE_ENV === undefined ? 'default' : process.env.NODE_ENV;
+    this.env = !this.isValidEnv(process.env.NODE_ENV) ? 'default' : process.env.NODE_ENV;
     this.ENC_KEY = process.env.ENC_KEY;
     this.root = `..${__dirname}`;
     if (!this.isPlainExists() && !this.isConfigExists()) {
@@ -22,6 +22,9 @@ class EncConfig {
     this.config = require('config');
   }
 
+  isValidEnv(env) {
+    return env === 'prod' || env === 'dev';
+  }
 
   encConfig() {
     const configFiles = fs.readdirSync(this.getPath(true));
