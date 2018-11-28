@@ -1,5 +1,5 @@
 const Web3 = require('web3');
-const config = require('config');
+const config = require('./ConfigService');
 
 class Web3Factory {
 

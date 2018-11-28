@@ -1,4 +1,4 @@
-const config = require('config');
+const config = require('./ConfigService');
 const Web3Factory = require('./Web3Factory');
 const redisService = require('./RedisService');
 const logger = require('../utils/Logger');

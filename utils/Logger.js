@@ -1,6 +1,6 @@
 const path = require('path');
-const config = require('config');
 const winston = require('winston');
+const config = require('../services/ConfigService');
 require('winston-daily-rotate-file');
 
 /**
