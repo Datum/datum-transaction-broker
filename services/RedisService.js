@@ -32,6 +32,7 @@ class RedisService {
         },
       ],
       {
+        enableReadyCheck: true,
         redisOptions:
             {
               reconnectOnError,
@@ -40,12 +41,12 @@ class RedisService {
 
       // FIXME this is for temp debug
 
-      tmpRedis.on('connect', () => { logger.info('redis connect'); });
-      tmpRedis.on('ready', () => { logger.info('redis ready'); });
+      tmpRedis.on('connect', (data) => { logger.info('redis connect', data); });
+      tmpRedis.on('ready', (data) => { logger.info('redis ready', data); });
       tmpRedis.on('error', (err) => { logger.info('redis error', err); });
-      tmpRedis.on('close', () => { logger.info('redis close'); });
-      tmpRedis.on('reconnecting', () => { logger.info('redis reconnecting'); });
-      tmpRedis.on('end', () => { logger.info('redis end'); });
+      tmpRedis.on('close', (data) => { logger.info('redis close', data); });
+      tmpRedis.on('reconnecting', (data) => { logger.info('redis reconnecting', data); });
+      tmpRedis.on('end', (data) => { logger.info('redis end', data); });
     } else {
       logger.info('creating redis standalone connection');
       tmpRedis = await new Redis(config.redis);
