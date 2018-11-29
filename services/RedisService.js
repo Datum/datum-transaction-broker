@@ -3,12 +3,13 @@ const uuid = require('uuid/v1');
 const config = require('./ConfigService');
 const logger = require('../utils/Logger');
 
-function _reconnectOnError(err) {
-    var targetError = 'READONLY';
-    if (err.message.slice(0, targetError.length) === targetError) {
-        // Only reconnect when the error starts with "READONLY"
-        return true; // or `return 1;`
-    }
+function reconnectOnError(err) {
+  const targetError = 'READONLY';
+  if (err.message.slice(0, targetError.length) === targetError) {
+    // Only reconnect when the error starts with "READONLY"
+    return 2; // or `return 1;`
+  }
+  return false;
 }
 
 class RedisService {
@@ -21,29 +22,30 @@ class RedisService {
   async getRedisInstance() {
     let tmpRedis;
     if (this.isProd()) {
+      logger.info('creating redis cluster connection');
       tmpRedis = await new Redis.Cluster([
-          config.redis,
-        ],
         {
-          redisOptions:
-            {
-                reconnectOnError: _reconnectOnError
-            }
+          port: 6379,
+          host: 'datum-redis-prod-0001-001.ddktsn.0001.apse1.cache.amazonaws.com',
         }
-      )
-    }
+      ],
+      {
+        redisOptions:
+            {
+              reconnectOnError,
+            },
+      });
 
       // FIXME this is for temp debug
 
-        tmpRedis.on('connect', function () { logger.info('redis connect'); });
-        tmpRedis.on('ready', function () { logger.info('redis ready'); });
-        tmpRedis.on('error', function (err) { logger.info('redis error', err); });
-        tmpRedis.on('close', function () { logger.info('redis close'); });
-        tmpRedis.on('reconnecting', function () { logger.info('redis reconnecting'); });
-        tmpRedis.on('end', function () { logger.info('redis end'); });
-
-
+      tmpRedis.on('connect', () => { logger.info('redis connect'); });
+      tmpRedis.on('ready', () => { logger.info('redis ready'); });
+      tmpRedis.on('error', (err) => { logger.info('redis error', err); });
+      tmpRedis.on('close', () => { logger.info('redis close'); });
+      tmpRedis.on('reconnecting', () => { logger.info('redis reconnecting'); });
+      tmpRedis.on('end', () => { logger.info('redis end'); });
     } else {
+      logger.info('creating redis standalone connection');
       tmpRedis = await new Redis(config.redis);
     }
     return tmpRedis;
