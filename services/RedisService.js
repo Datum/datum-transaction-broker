@@ -3,9 +3,11 @@ const uuid = require('uuid/v1');
 const config = require('./ConfigService');
 const logger = require('../utils/Logger');
 
-function reconnectOnError(err) {
+function reconnectOnError(error) {
   const targetError = 'READONLY';
-  if (err.message.slice(0, targetError.length) === targetError) {
+  if (error !== undefined
+    && error.message !== undefined
+     && error.message.slice(0, targetError.length) === targetError) {
     // Only reconnect when the error starts with "READONLY"
     return 2; // or `return 1;`
   }
@@ -27,7 +29,7 @@ class RedisService {
         {
           port: 6379,
           host: 'datum-redis-prod-0001-001.ddktsn.0001.apse1.cache.amazonaws.com',
-        }
+        },
       ],
       {
         redisOptions:
