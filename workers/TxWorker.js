@@ -45,7 +45,7 @@ class TxWorker {
       logger.debug(`TxWoker:${channelName}:${tx.transactionHash}:Transaction submitted`);
       return Promise.resolve(txResult);
     } catch (err) {
-      this.examinError(err);
+      // this.examinError(err);
       return Promise.reject(err);
     }
   }
