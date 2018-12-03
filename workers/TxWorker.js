@@ -34,6 +34,7 @@ class TxWorker {
       // Update transaction status
       const txResult = await this.submitTx(tx.rawTx, tmpTxId);
       logger.debug(`TxWoker:${channelName}:${tx.transactionHash}:Transaction signed`);
+      logger.debug(`TxWoker:${channelName}:${tx.transactionHash}:Transaction details: ${JSON.stringify(tx.txObj)}`);
       // this.publisher.pushMsg(JSON.stringify({
       //   nonce: tx.nonce,
       //   transactionHash: tx.transactionHash,
@@ -53,7 +54,7 @@ class TxWorker {
   async checkBalance() {
     const balance = await this.web3.eth.getBalance(this.account.address);
     if (this.web3.utils.fromWei(balance) < this.minBalance) {
-      throw new Error(`Insuffecient Balance, Account: ${this.account.address}, current balance: ${balance}`);
+      throw new Error(`Insufficient Balance, Account: ${this.account.address}, current balance: ${balance}`);
     }
   }
 
@@ -73,8 +74,6 @@ class TxWorker {
       nonce: this.web3.utils.toHex(nonce),
       from: this.account.address,
     };
-
-    logger.debug(`TxWorker:Signing Transaction: ${JSON.stringify(txObj)}`);
 
     const tmpTx = new Tx(txObj);
 
