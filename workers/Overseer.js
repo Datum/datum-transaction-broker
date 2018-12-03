@@ -20,6 +20,7 @@ class Overseer {
       .then((redis) => {
         this.redis = redis;
         this.intervalID = setInterval(this.checkRPC.bind(this), this.intervals);
+        this.web3.eth.net.isListening().then((status) => { logger.debug(`Provider connection status: ${status}`); });
       });
   }
 
@@ -27,7 +28,6 @@ class Overseer {
     if (!this.pause) {
       this.web3.eth.net.isListening()
         .then((status) => {
-          logger.debug(`Overseer: network status: ${status}`);
           if (!this.worldStatus) {
             this.resumeWorld();
           }

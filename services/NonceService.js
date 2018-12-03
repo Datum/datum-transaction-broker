@@ -28,8 +28,8 @@ class NonceService {
       const transactionCount = await this.web3.eth.getTransactionCount(account.address);
       logger.debug(`NonceService::Calibrating:${account.address}`);
       logger.debug(`NonceService::Calibrating:Transaction count:${transactionCount}`);
-      logger.debug(`NonceService::Calibrating:Pending Transaction count:${tmpn}`);
-      logger.debug(`NonceService::Calibrating:Local Pending Transactions:${pendingNonce}`);
+      logger.debug(`NonceService::Calibrating:Pending Transaction count:${tmpn} : TYPE: ${typeof tmpn}`);
+      logger.debug(`NonceService::Calibrating:Local Pending Transactions:${pendingNonce} : TYPE: ${typeof pendingNonce}`);
       return this.fillNonce(this.listName(account.address), tmpn, pendingNonce);
     });
     await Promise.all(promises);
@@ -45,7 +45,10 @@ class NonceService {
   async getLastPendingNonce(channel) {
     const len = await this.redis.llen(channel);
     const tx = await this.redis.lindex(channel, len - 1);
+    logger.debug(`Lindex tx: ${tx}`);
     const nonce = (tx !== null && typeof tx.nonce !== 'undefined') ? tx.nonce : 0;
+    logger.debug(`Nonce-> ${nonce}`);
+    logger.debug(`getLastPendingNonce: ${nonce}; current transaction nonce: ${tx}`);
     return nonce;
   }
 
@@ -59,7 +62,10 @@ class NonceService {
     const nonce = await this.redis.rpop(this.listName(address));
     logger.debug(`NonceService::${address}:Current transaction count: ${nonce}`);
     this.redis.lindex(this.listName(address), 0)
-      .then(val => this.redis.lpush(this.listName(address), (val + 1)));
+      .then((val) => {
+        logger.debug(`Refilling nonce: ${val}: type: ${typeof val}`);
+        this.redis.lpush(this.listName(address), (parseInt(val) + 1));
+      });
     return nonce;
   }
 
@@ -78,9 +84,12 @@ class NonceService {
   async fillNonce(listName, transactionCount, pendingNonce) {
     const results = [];
     let startingNonce = this.getStartingNonce(transactionCount, pendingNonce);
+    logger.debug(`Starting nonce type ${typeof startingNonce} => ${startingNonce}`);
     let lstLen = 0;
     await this.redis.del(listName); // First delete prev nonce list
+    logger.debug(`Resetting nonce list: ${listName}`);
     for (;lstLen < 60; startingNonce += 1, lstLen += 1) {
+      logger.debug(`Starting nonce type ${typeof startingNonce} => ${startingNonce}`);
       results.push(this.redis.lpush(listName, startingNonce));
     }
     return Promise.all(results);

@@ -34,14 +34,14 @@ class TxWorker {
       // Update transaction status
       const txResult = await this.submitTx(tx.rawTx, tmpTxId);
       logger.debug(`TxWoker:${channelName}:${tx.transactionHash}:Transaction signed`);
-      this.publisher.pushMsg(JSON.stringify({
-        nonce: tx.nonce,
-        transactionHash: tx.transactionHash,
-        txObj: tx.txObj,
-        id: tmpTxId,
-        ts: new Date(),
-        txResult,
-      }));
+      // this.publisher.pushMsg(JSON.stringify({
+      //   nonce: tx.nonce,
+      //   transactionHash: tx.transactionHash,
+      //   txObj: tx.txObj,
+      //   id: tmpTxId,
+      //   ts: new Date(),
+      //   txResult,
+      // }));
       logger.debug(`TxWoker:${channelName}:${tx.transactionHash}:Transaction submitted`);
       return Promise.resolve(txResult);
     } catch (err) {

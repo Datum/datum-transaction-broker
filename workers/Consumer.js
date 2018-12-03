@@ -36,7 +36,7 @@ class Consumer extends Slave {
      */
   async onRequest(err, payload) {
     if (err || payload === undefined || !Array.isArray(payload)) {
-      logger.error(`Consumer:${this.id}: Error while fetching transaction:${payload}\nerror:${err}`);
+      logger.error(`Consumer:${this.queues.toString()}:${this.id}: Error while fetching transaction:${payload}\nerror:${err}`);
     } else {
       const [channelName, message] = payload;
       const tmpMsg = typeof (message) === 'object' ? JSON.stringify(message) : message;

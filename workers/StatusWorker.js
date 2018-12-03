@@ -26,7 +26,7 @@ class StatusWorker {
     }
     logger.debug(`StatusWorker:${channelName}:Submitting Transaction for recheck:${tmpTx.id}`);
     logger.debug(`StatusWorker:${channelName}:${tmpTx.id}: ${tx}`);
-    return this.submitToRecheck(tx);
+    // return this.submitToRecheck(tx);
   }
 
   isNull(obj) {
