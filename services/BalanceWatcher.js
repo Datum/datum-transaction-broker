@@ -24,6 +24,7 @@ class BalanceWatcher {
       const balance = await this.web3.eth.getBalance(account);
       const exp = await this.isExp();
       const belowBalance = (this.web3.utils.fromWei(balance) < this.settings.minBalance);
+      logger.debug(`BalanceWatcher: ${account}:Below limit:${belowBalance}:Last warning Expired: ${exp}`);
       if (belowBalance && exp) {
         logger.error(`Insufficient Balance, Account: ${account}, current balance: ${balance}`);
         this.resgisterTimeout();
