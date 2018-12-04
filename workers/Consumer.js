@@ -15,7 +15,8 @@ class Consumer extends Slave {
         this.queues = queues;
         this.timeout = timeout;
         this.execute = execute;
-        this.waitAndExec();
+        setTimeout(this.waitAndExec.bind(this), 5000);
+        // this.waitAndExec();
       });
   }
 

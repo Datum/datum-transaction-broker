@@ -12,25 +12,25 @@ const Overseer = require('../workers/Overseer');
 class TransactionService {
 
   constructor() {
-    this.dispatcher = new Publisher([config.queues.transactions], 'transaction_dispatcher');
+    this.dispatcher = new Publisher([`${config.appName}_${config.queues.transactions}`], `${config.appName}_transaction_dispatcher`);
     this.txWorkers = {};
     this.statusWorkers = {};
     this.overseer = undefined;
   }
 
   start() {
-    logger.info('Transaction service starting...');
+    logger.info(`${config.appName}:Transaction service starting...`);
     config.accounts.forEach((account) => {
-      this.txWorkers[account.address] = new TxWorker([config.queues.transactions], [`${account.address}_pending`], account);
-      this.statusWorkers[account.address] = new StatusWorker([`${account.address}_pending`], [config.queues.transactions]);
+      this.txWorkers[account.address] = new TxWorker([`${config.appName}_${config.queues.transactions}`], [`${config.appName}_${account.address}_pending`], account);
+      this.statusWorkers[account.address] = new StatusWorker([`${config.appName}_${account.address}_pending`], [`${config.appName}_${config.queues.transactions}`]);
     });
-    this.overseer = new Overseer(config.queues.overseer);
+    this.overseer = new Overseer(`${config.appName}_${config.queues.overseer}`);
   }
 
   dispatch(request) {
     const tmp = this.convertVals(request);
     tmp.id = uuid();
-    logger.debug(`Dispatching tmp ${tmp.id}`);
+    logger.debug(`${config.appName}: Dispatching tmp ${tmp.id}`);
     return this.dispatcher.pushMsg(JSON.stringify(tmp)).then(() => Promise.resolve(tmp.id));
   }
 
