@@ -14,14 +14,18 @@ class Config {
       throw new Error('Configurations files are not found');
     }
 
-    if (this.env === 'prod' && (this.ENC_KEY === undefined || this.ENC_KEY.length === 0)) {
+    if (this.isProd() && (this.ENC_KEY === undefined || this.ENC_KEY.length === 0)) {
       throw new Error('Encryption key must be initiliazed in production');
     }
 
-    if (this.isPlainExists()) {
+    if (this.isProd() && this.envthis.isPlainExists()) {
       this.encConfig();
     }
     this.config = require('config');
+  }
+
+  isProd() {
+    return this.env === 'prod';
   }
 
   isDef(v) {
