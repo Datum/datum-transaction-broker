@@ -18,7 +18,7 @@ class Config {
       throw new Error('Encryption key must be initiliazed in production');
     }
 
-    if (this.isProd() && this.envthis.isPlainExists()) {
+    if (this.isProd() && this.isPlainExists()) {
       this.encConfig();
     }
     this.config = require('config');
