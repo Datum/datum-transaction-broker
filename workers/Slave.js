@@ -26,7 +26,7 @@ class Slave {
   }
 
   subscribeToOverseer() {
-    this.seerRedis.subscribe(config.queues.overseer, (err) => {
+    this.seerRedis.subscribe(`${config.appName}_${config.queues.overseer}`, (err) => {
       if (err) logger.error(`Slave: error while listening to overseer: ${err}`);
       this.seerRedis.on('message', (channel, message) => {
         logger.debug(`this.id: ${channel}: ${message}`);

@@ -1,10 +1,12 @@
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const uuid = require('uuid');
 
-class EncConfig {
+class Config {
 
   constructor() {
+    this.appName = this.isDef(process.env.APP_NAME) ? process.env.APP_NAME : uuid();
     this.env = !this.isValidEnv(process.env.NODE_ENV) ? 'default' : process.env.NODE_ENV;
     this.ENC_KEY = process.env.ENC_KEY;
     this.root = `..${__dirname}`;
@@ -12,14 +14,22 @@ class EncConfig {
       throw new Error('Configurations files are not found');
     }
 
-    if (this.ENC_KEY === undefined || this.ENC_KEY.length === 0) {
+    if (this.isProd() && (this.ENC_KEY === undefined || this.ENC_KEY.length === 0)) {
       throw new Error('Encryption key must be initiliazed in production');
     }
 
-    if (this.isPlainExists()) {
+    if (this.isProd() && this.isPlainExists()) {
       this.encConfig();
     }
     this.config = require('config');
+  }
+
+  isProd() {
+    return this.env === 'prod';
+  }
+
+  isDef(v) {
+    return v !== undefined && v.trim().length !== 0;
   }
 
   isValidEnv(env) {
@@ -124,7 +134,7 @@ class EncConfig {
   }
 
 
-  getConfigProxy() {
+  getEencConfigProxy() {
     return new Proxy(this.config, {
       get: (target, name) => {
         let tmp = target[name];
@@ -140,13 +150,24 @@ class EncConfig {
     });
   }
 
+  getConfigProxy() {
+    return new Proxy(this.config, {
+      get: (target, name) => {
+        if (name === 'appName') {
+          return this.appName;
+        }
+        return this.config[name];
+      },
+    });
+  }
+
 }
 function getConfig() {
+  const conf = new Config();
   if (process.env.NODE_ENV === 'prod') {
-    const encConfig = new EncConfig();
-    return encConfig.getConfigProxy();
+    return conf.getEencConfigProxy();
   }
-  return require('config');
+  return conf.getConfigProxy();
 }
 
 const config = getConfig();

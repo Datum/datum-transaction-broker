@@ -2,12 +2,12 @@
 const Tx = require('ethereumjs-tx');
 const Publisher = require('./Publisher');
 const Consumer = require('./Consumer');
-
+const config = require('../services/ConfigService');
 const nonceService = require('../services/NonceService');
 const web3Factory = require('../services/Web3Factory');
 const logger = require('../utils/Logger');
 const redisService = require('../services/RedisService');
-
+const balanceWatcher = require('../services/BalanceWatcher');
 const { TxStatus } = require('../constants');
 
 class TxWorker {
@@ -25,7 +25,7 @@ class TxWorker {
 
   async execute(error, [channelName, message]) {
     try {
-      this.checkBalance();
+      balanceWatcher.checkBalance(this.account.address);
       logger.debug(`TxWoker:${channelName}:${message}`);
       const msg = JSON.parse(message);
       const tmpTxId = msg.id;
@@ -34,6 +34,7 @@ class TxWorker {
       // Update transaction status
       const txResult = await this.submitTx(tx.rawTx, tmpTxId);
       logger.debug(`TxWoker:${channelName}:${tx.transactionHash}:Transaction signed`);
+      logger.debug(`TxWoker:${channelName}:${tx.transactionHash}:Transaction details: ${JSON.stringify(tx.txObj)}`);
       // this.publisher.pushMsg(JSON.stringify({
       //   nonce: tx.nonce,
       //   transactionHash: tx.transactionHash,
@@ -45,17 +46,11 @@ class TxWorker {
       logger.debug(`TxWoker:${channelName}:${tx.transactionHash}:Transaction submitted`);
       return Promise.resolve(txResult);
     } catch (err) {
-      this.examinError(err);
+      // this.examinError(err);
       return Promise.reject(err);
     }
   }
 
-  async checkBalance() {
-    const balance = await this.web3.eth.getBalance(this.account.address);
-    if (this.web3.utils.fromWei(balance) < this.minBalance) {
-      throw new Error(`Insuffecient Balance, Account: ${this.account.address}, current balance: ${balance}`);
-    }
-  }
 
   /**
      * async signTransaction - Build and sign transaction object
@@ -74,8 +69,6 @@ class TxWorker {
       from: this.account.address,
     };
 
-    logger.debug(`TxWorker:Signing Transaction: ${JSON.stringify(txObj)}`);
-
     const tmpTx = new Tx(txObj);
 
     tmpTx.sign(Buffer.from(this.account.privateKey, 'hex'));
@@ -93,6 +86,7 @@ class TxWorker {
       this.web3.eth.sendSignedTransaction(transaction)
         .on('transactionHash', (hash) => {
           // Set to expire after 24 hours
+          logger.debug(`Hash:${txHash}:submitted`);
           this.redis.set(hash, JSON.stringify({ status: TxStatus.SUBMITTED }));
           this.redis.lpush([id], JSON.stringify(
             { status: TxStatus.SUBMITTED, transactionHash: hash },
@@ -100,9 +94,11 @@ class TxWorker {
           resolve(hash);
         })
         .on('receipt', (receipt) => {
+          logger.debug(`Hash:${receipt.transactionHash}:mined:${JSON.stringify(receipt)}`);
           this.redis.set(receipt.transactionHash, JSON.stringify({ status: 'mined' }));
         })
         .on('error', (err) => {
+          logger.error(`Hash:${txHash}:failed:${err}`);
           this.redis.lpush([id], JSON.stringify(
             { error: (typeof err.message !== 'undefined' ? err.message : err) },
           ));
