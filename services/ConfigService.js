@@ -7,7 +7,7 @@ class Config {
 
   constructor() {
     this.appName = this.isDef(process.env.APP_NAME) ? process.env.APP_NAME : uuid();
-    this.env = !this.isValidEnv(process.env.NODE_ENV) ? 'default' : process.env.NODE_ENV;
+    this.env = typeof process.env.NODE_ENV === 'undefined' ? 'default' : process.env.NODE_ENV;
     this.ENC_KEY = process.env.ENC_KEY;
     this.root = `..${__dirname}`;
     if (!this.isPlainExists() && !this.isConfigExists()) {
