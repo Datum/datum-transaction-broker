@@ -2,14 +2,12 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const uuid = require('uuid');
-const logger = require('../utils/Logger');
 
 class Config {
 
   constructor() {
     this.appName = this.isDef(process.env.APP_NAME) ? process.env.APP_NAME : uuid();
     this.env = typeof process.env.NODE_ENV === 'undefined' ? 'default' : process.env.NODE_ENV;
-    logger.debug(`Environment is ${this.env}`);
     this.ENC_KEY = process.env.ENC_KEY;
     this.root = `..${__dirname}`;
     if (!this.isPlainExists() && !this.isConfigExists()) {
