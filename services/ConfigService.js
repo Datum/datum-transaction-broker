@@ -137,7 +137,14 @@ class Config {
   getEencConfigProxy() {
     return new Proxy(this.config, {
       get: (target, name) => {
+        if (name === 'appName') {
+          return this.appName;
+        }
+
         let tmp = target[name];
+        if (typeof tmp === 'undefined') {
+          return tmp;
+        }
         if (Array.isArray(tmp)) {
           tmp = this.decObj({ [name]: target[name] });
           return tmp[name];
