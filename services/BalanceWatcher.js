@@ -16,6 +16,7 @@ class BalanceWatcher {
       minWalletBalance: 2000,
       minDepostedBalance: 2000,
     } : config.balanceWatcher;
+
     this.settings = this.overrideBalanceLimits(this.settings);
     redisService.newRedis().then(
       (redis) => {
@@ -34,7 +35,8 @@ class BalanceWatcher {
     if (typeof MDB !== 'undefined' && MDB > 0) {
       tmp.minDepostedBalance = MDB;
     }
-    return settings;
+
+    return tmp;
   }
 
   async checkBalance(account) {
@@ -51,7 +53,7 @@ class BalanceWatcher {
   async shouldAlert(key, curr, isBelowMin, account) {
     const warnningExpired = await this.isExp(key);
     if (warnningExpired && isBelowMin) {
-      logger.error(`Insufficient Balance:${key}: Account:${account}: current balance:${curr}`);
+      logger.error(`Insufficient Balance:${key}: Account:${account}: current balance:${this.toDat(curr)}`);
       this.resgisterTimeout(key);
     }
   }
