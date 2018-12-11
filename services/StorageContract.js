@@ -1,4 +1,3 @@
-const lightwallet = require('eth-lightwallet');
 const config = require('./ConfigService');
 const web3Factory = require('./Web3Factory');
 
@@ -13,17 +12,12 @@ class StorageContract {
     );
   }
 
-  async getDepositedBalance(targetAddress, toDat = true) {
+  async getDepositedBalance(targetAddress, toDat = false) {
     const db = await this.contract.methods.getDepositBalance(targetAddress).call();
     if (toDat) {
       return this.web3.utils.fromWei(db);
     }
     return db;
-  }
-
-  encFunctionData(method, types, params) {
-    // eslint-disable-next-line no-underscore-dangle
-    return lightwallet.txutils._encodeFunctionTxData(method, types, params);
   }
 
 }

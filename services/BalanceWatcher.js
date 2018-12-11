@@ -27,9 +27,10 @@ class BalanceWatcher {
   async checkBalance(account) {
     if (this.redis !== undefined) {
       const [walletBalance, depositedBalance] = await this.getBalances(account);
+      logger.debug(`Account Balances: ${walletBalance}:${depositedBalance}`);
       const result = this.examinBalances(walletBalance, depositedBalance);
-      this.shouldAlert(this.WALLET_BALANCE, walletBalance, result.isValidWalletBalance, account);
-      this.shouldAlert(this.DEPOSITE_BALANCE, depositedBalance, result.isValidDepositBalance,
+      this.shouldAlert(this.WALLET_BALANCE, walletBalance, result.walletBalanceOverdrawn, account);
+      this.shouldAlert(this.DEPOSITE_BALANCE, depositedBalance, result.depositBalanceOverdrawn,
         account);
     }
   }
@@ -44,9 +45,13 @@ class BalanceWatcher {
 
   examinBalances(walletBalance, depositedBalance) {
     return {
-      isValidWalletBalance: walletBalance > this.settings.minWalletBalance,
-      isValidDepositBalance: depositedBalance > this.settings.minDepostedBalance,
+      walletBalanceOverdrawn: this.toDat(walletBalance) < this.settings.minWalletBalance,
+      depositBalanceOverdrawn: this.toDat(depositedBalance) < this.settings.minDepostedBalance,
     };
+  }
+
+  toDat(v) {
+    return this.web3.utils.fromWei(v);
   }
 
   getBalances(account) {
