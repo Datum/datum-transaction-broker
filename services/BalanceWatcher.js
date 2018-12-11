@@ -16,12 +16,25 @@ class BalanceWatcher {
       minWalletBalance: 2000,
       minDepostedBalance: 2000,
     } : config.balanceWatcher;
-
+    this.settings = this.overrideBalanceLimits(this.settings);
     redisService.newRedis().then(
       (redis) => {
         this.redis = redis;
       },
     );
+  }
+
+  overrideBalanceLimits(settings) {
+    const tmp = { ...settings };
+    const MWB = process.env.MIN_WALLET_BALANCE;
+    const MDB = process.env.MIN_DEPOSIT_BALANCE;
+    if (typeof MWB !== 'undefined' && MWB > 0) {
+      tmp.minWalletBalance = MWB;
+    }
+    if (typeof MDB !== 'undefined' && MDB > 0) {
+      tmp.minDepostedBalance = MDB;
+    }
+    return settings;
   }
 
   async checkBalance(account) {
