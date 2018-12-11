@@ -2,14 +2,19 @@ const redisService = require('./RedisService');
 const config = require('./ConfigService');
 const web3Factory = require('./Web3Factory');
 const logger = require('../utils/Logger');
+const storageContract = require('./StorageContract');
 
 class BalanceWatcher {
 
   constructor() {
+    this.WALLET_BALANCE = 'wallet';
+    this.DEPOSITE_BALANCE = 'deposited';
+
     this.web3 = web3Factory.getWeb3();
     this.settings = config.balanceWatcher === undefined ? {
       timeout: 86400, // 24 hours
-      minBalance: 2000,
+      minWalletBalance: 2000,
+      minDepostedBalance: 2000,
     } : config.balanceWatcher;
 
     redisService.newRedis().then(
@@ -21,23 +26,41 @@ class BalanceWatcher {
 
   async checkBalance(account) {
     if (this.redis !== undefined) {
-      const balance = await this.web3.eth.getBalance(account);
-      const exp = await this.isExp();
-      const belowBalance = (this.web3.utils.fromWei(balance) < this.settings.minBalance);
-      logger.debug(`BalanceWatcher: ${account}:Below limit:${belowBalance}:Last warning Expired: ${exp}`);
-      if (belowBalance && exp) {
-        logger.error(`Insufficient Balance, Account: ${account}, current balance: ${balance}`);
-        this.resgisterTimeout();
-      }
+      const [walletBalance, depositedBalance] = await this.getBalances(account);
+      const result = this.examinBalances(walletBalance, depositedBalance);
+      this.shouldAlert(this.WALLET_BALANCE, walletBalance, result.isValidWalletBalance, account);
+      this.shouldAlert(this.DEPOSITE_BALANCE, depositedBalance, result.isValidDepositBalance,
+        account);
     }
   }
 
-  async resgisterTimeout() {
-    this.redis.setex(`${config.appName}_balancewatcher`, this.settings.timeout, 'true');
+  async shouldAlert(key, curr, isBelowMin, account) {
+    const warnningExpired = await this.isExp(key);
+    if (warnningExpired && isBelowMin) {
+      logger.error(`Insufficient Balance:${key}: Account:${account}: current balance:${curr}`);
+      this.resgisterTimeout(key);
+    }
   }
 
-  async isExp() {
-    const status = await this.redis.get(`${config.appName}_balancewatcher`);
+  examinBalances(walletBalance, depositedBalance) {
+    return {
+      isValidWalletBalance: walletBalance > this.settings.minWalletBalance,
+      isValidDepositBalance: depositedBalance > this.settings.minDepostedBalance,
+    };
+  }
+
+  getBalances(account) {
+    const balanceReq = this.web3.eth.getBalance(account);
+    const depositedBalanceReq = storageContract.getDepositedBalance(account);
+    return Promise.all([balanceReq, depositedBalanceReq]);
+  }
+
+  async resgisterTimeout(key) {
+    this.redis.setex(`${config.appName}_${key}_balancewatcher`, this.settings.timeout, 'true');
+  }
+
+  async isExp(key) {
+    const status = await this.redis.get(`${config.appName}_${key}_balancewatcher`);
     return (status === null);
   }
 
