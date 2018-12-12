@@ -32,7 +32,7 @@ class TxWorker {
       delete msg.id;
       const tx = await this.signTransaction(msg);
       // Update transaction status
-      const txResult = await this.submitTx(tx.rawTx, tmpTxId);
+      const txResult = await this.submitTx(tx.rawTx, tmpTxId, tx.transactionHash);
       logger.debug(`TxWoker:${channelName}:${tx.transactionHash}:Transaction signed`);
       logger.debug(`TxWoker:${channelName}:${tx.transactionHash}:Transaction details: ${JSON.stringify(tx.txObj)}`);
       // this.publisher.pushMsg(JSON.stringify({
