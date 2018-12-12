@@ -42,7 +42,7 @@ class BalanceWatcher {
   async checkBalance(account) {
     if (this.redis !== undefined) {
       const [walletBalance, depositedBalance] = await this.getBalances(account);
-      logger.debug(`Account Balances: ${walletBalance}:${depositedBalance}`);
+      logger.debug(`Account Balances: Wallet:${this.toDat(walletBalance)}, Deposited:${this.toDat(depositedBalance)}`);
       const result = this.examinBalances(walletBalance, depositedBalance);
       this.shouldAlert(this.WALLET_BALANCE, walletBalance, result.walletBalanceOverdrawn, account);
       this.shouldAlert(this.DEPOSITE_BALANCE, depositedBalance, result.depositBalanceOverdrawn,
