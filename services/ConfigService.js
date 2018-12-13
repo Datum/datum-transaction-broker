@@ -7,7 +7,7 @@ class Config {
 
   constructor() {
     this.appName = this.isDef(process.env.APP_NAME) ? process.env.APP_NAME : uuid();
-    this.env = !this.isValidEnv(process.env.NODE_ENV) ? 'default' : process.env.NODE_ENV;
+    this.env = typeof process.env.NODE_ENV === 'undefined' ? 'default' : process.env.NODE_ENV;
     this.ENC_KEY = process.env.ENC_KEY;
     this.root = `..${__dirname}`;
     if (!this.isPlainExists() && !this.isConfigExists()) {
@@ -137,7 +137,14 @@ class Config {
   getEencConfigProxy() {
     return new Proxy(this.config, {
       get: (target, name) => {
+        if (name === 'appName') {
+          return this.appName;
+        }
+
         let tmp = target[name];
+        if (typeof tmp === 'undefined') {
+          return tmp;
+        }
         if (Array.isArray(tmp)) {
           tmp = this.decObj({ [name]: target[name] });
           return tmp[name];

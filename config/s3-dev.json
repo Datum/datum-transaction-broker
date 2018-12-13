@@ -1,0 +1,18 @@
+{
+  "redis":{
+    "host":"kl-test.ddktsn.0001.apse1.cache.amazonaws.com",
+    "port":6379
+  },
+  "web3":{
+    "provider":"https://node-5.megatron.datum.org/api"
+  },
+  "server":{
+    "port":8081
+  },
+  "logger": {
+    "level": "debug"
+  },
+  "accounts":[
+    {"privateKey":"37e80eab6a9ee436e0a745957bd5c9fd44760187ed00766c2762c044049bf2a3","address":"0xeeca3af898f2cdf7c290ccda861b827425eee9a0"}
+  ]
+}

@@ -32,7 +32,7 @@ class TxWorker {
       delete msg.id;
       const tx = await this.signTransaction(msg);
       // Update transaction status
-      const txResult = await this.submitTx(tx.rawTx, tmpTxId);
+      const txResult = await this.submitTx(tx.rawTx, tmpTxId, tx.transactionHash);
       logger.debug(`TxWoker:${channelName}:${tx.transactionHash}:Transaction signed`);
       logger.debug(`TxWoker:${channelName}:${tx.transactionHash}:Transaction details: ${JSON.stringify(tx.txObj)}`);
       // this.publisher.pushMsg(JSON.stringify({
@@ -60,10 +60,10 @@ class TxWorker {
      */
   async signTransaction(txObject) {
     const nonce = await nonceService.getNonce(this.account.address);
-
+    const estimateGas = await this.estimateGas(txObject);
     const txObj = {
       ...txObject,
-      gas: this.web3.utils.toHex(6000000),
+      gas: estimateGas,
       gasPrice: this.web3.utils.toHex(9000000000),
       nonce: this.web3.utils.toHex(nonce),
       from: this.account.address,
@@ -78,6 +78,14 @@ class TxWorker {
       nonce,
       transactionHash: `0x${tmpTx.hash().toString('hex')}`,
     };
+  }
+
+  async estimateGas(tx) {
+    const estimateGas = await this.web3.eth.estimateGas({
+      ...tx,
+      from: this.account.address,
+    });
+    return Math.floor((estimateGas + (0.1 * estimateGas)));
   }
 
   async submitTx(transaction, id, txHash) {
