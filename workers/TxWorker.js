@@ -60,10 +60,10 @@ class TxWorker {
      */
   async signTransaction(txObject) {
     const nonce = await nonceService.getNonce(this.account.address);
-    const estimateGas = await this.estimateGas(txObject);
+    // const estimateGas = await this.estimateGas(txObject);
     const txObj = {
       ...txObject,
-      gas: estimateGas,
+      gas: this.web3.utils.toHex(1500000),
       gasPrice: this.web3.utils.toHex(9000000000),
       nonce: this.web3.utils.toHex(nonce),
       from: this.account.address,
