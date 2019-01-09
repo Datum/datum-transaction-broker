@@ -16,7 +16,12 @@ class NonceService {
   async calibrateNonce(accounts = config.accounts) {
     logger.debug('NonceService:calibrating nonces...');
     const promises = accounts.map(async (account) => {
-      const transactionCount = await this.web3.eth.getTransactionCount(account.address);
+      let transactionCount = await this.web3.eth.getTransactionCount(account.address);
+      /**
+       * This step is required as returned tx count is the one should
+       * be used while we are looking at the start to incr
+       */
+      transactionCount -= 1;
       logger.debug(`${config.appName}:NonceService::Calibrating:${account.address}`);
       logger.debug(`${config.appName}:NonceService::Calibrating:Transaction count:${transactionCount}`);
       this.redis.set(this.nonceCounterName(`${account.address}`), transactionCount);
@@ -24,8 +29,10 @@ class NonceService {
     await Promise.all(promises);
   }
 
-  getNonce(address) {
-    return this.redis.incr(this.nonceCounterName(address));
+  async getNonce(address) {
+    const tmpNonce = await this.redis.incr(this.nonceCounterName(address));
+    logger.debug(`${config.appName}:${address}:NonceService:Fetching Nonce:${tmpNonce}`);
+    return tmpNonce;
   }
 
   nonceCounterName(address) {
