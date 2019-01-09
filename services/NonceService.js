@@ -16,7 +16,7 @@ class NonceService {
   async calibrateNonce(accounts = config.accounts) {
     logger.debug('NonceService:calibrating nonces...');
     const promises = accounts.map(async (account) => {
-      let transactionCount = await this.web3.eth.getTransactionCount(account.address);
+      let transactionCount = await this.web3.eth.getTransactionCount(account.address, 'pending');
       /**
        * This step is required as returned tx count is the one should
        * be used while we are looking at the start to incr
