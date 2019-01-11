@@ -24,7 +24,7 @@ class NonceService {
       transactionCount -= 1;
       logger.debug(`${config.appName}:NonceService::Calibrating:${account.address}`);
       logger.debug(`${config.appName}:NonceService::Calibrating:Transaction count:${transactionCount}`);
-      this.redis.set(this.nonceCounterName(`${account.address}`), transactionCount);
+      return this.redis.set(this.nonceCounterName(`${account.address}`), transactionCount);
     });
     await Promise.all(promises);
   }
