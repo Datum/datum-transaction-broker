@@ -7,7 +7,6 @@ const nonceService = require('../services/NonceService');
 const web3Factory = require('../services/Web3Factory');
 const logger = require('../utils/Logger');
 const redisService = require('../services/RedisService');
-const balanceWatcher = require('../services/BalanceWatcher');
 const { TxStatus } = require('../constants');
 
 class TxWorker {
@@ -25,7 +24,6 @@ class TxWorker {
 
   async execute(error, [channelName, message]) {
     try {
-      balanceWatcher.checkBalance(this.account.address);
       logger.debug(`TxWoker:${channelName}:${message}`);
       const msg = JSON.parse(message);
       const tmpTxId = msg.id;
@@ -35,14 +33,6 @@ class TxWorker {
       const txResult = await this.submitTx(tx.rawTx, tmpTxId, tx.transactionHash);
       logger.debug(`TxWoker:${channelName}:${tx.transactionHash}:Transaction signed`);
       logger.debug(`TxWoker:${channelName}:${tx.transactionHash}:Transaction details: ${JSON.stringify(tx.txObj)}`);
-      // this.publisher.pushMsg(JSON.stringify({
-      //   nonce: tx.nonce,
-      //   transactionHash: tx.transactionHash,
-      //   txObj: tx.txObj,
-      //   id: tmpTxId,
-      //   ts: new Date(),
-      //   txResult,
-      // }));
       logger.debug(`TxWoker:${channelName}:${tx.transactionHash}:Transaction submitted`);
       return Promise.resolve(txResult);
     } catch (err) {
