@@ -2,7 +2,7 @@
 const Tx = require('ethereumjs-tx');
 const Publisher = require('./Publisher');
 const Consumer = require('./Consumer');
-const config = require('../services/ConfigService');
+const exceptionTranslator = require('../utils/ExceptionTranslator');
 const nonceService = require('../services/NonceService');
 const web3Factory = require('../services/Web3Factory');
 const logger = require('../utils/Logger');
@@ -17,7 +17,7 @@ class TxWorker {
       this.redis = redis;
     });
     this.consumer = new Consumer(inputChannels, this.execute.bind(this), account.address);
-    this.publisher = new Publisher(outputChannels, account.address);
+    this.publisher = new Publisher(inputChannels, account.address);
     this.web3 = web3Factory.getWeb3();
     this.account = account;
     this.minBalance = minBalance;
@@ -30,23 +30,33 @@ class TxWorker {
       const msg = JSON.parse(message);
       const tmpTxId = msg.id;
       delete msg.id;
-      const tx = await this.signTransaction(msg);
+      let tx;
+      if (msg.resubmit === true) {
+        logger.debug(`TxWorker:Resubmitting Transaction:${msg.hash}`);
+        tx = {
+          rawTx: msg.tx,
+          transactionHash: msg.hash,
+          txObj: { hash: msg.hash, resubmit: true },
+        };
+      } else {
+        tx = await this.signTransaction(msg);
+      }
       // Update transaction status
-      const txResult = await this.submitTx(tx.rawTx, tmpTxId, tx.transactionHash);
       logger.debug(`TxWoker:${channelName}:${tx.transactionHash}:Transaction signed`);
       logger.debug(`TxWoker:${channelName}:${tx.transactionHash}:Transaction details: ${JSON.stringify(tx.txObj)}`);
-      // this.publisher.pushMsg(JSON.stringify({
-      //   nonce: tx.nonce,
-      //   transactionHash: tx.transactionHash,
-      //   txObj: tx.txObj,
-      //   id: tmpTxId,
-      //   ts: new Date(),
-      //   txResult,
-      // }));
-      logger.debug(`TxWoker:${channelName}:${tx.transactionHash}:Transaction submitted`);
-      return Promise.resolve(txResult);
+      return this.submitTx(tx.rawTx, tmpTxId, tx.transactionHash).then((txResult) => {
+        logger.debug(`TxWoker:${channelName}:${tx.transactionHash}:Transaction submitted`);
+        return Promise.resolve(txResult);
+      }).catch((err) => {
+        logger.error(`TxWoker:${channelName}:${tx.transactionHash}:Failed to submit Tx: ${err}`);
+        const errorCode = exceptionTranslator.translate(err);
+        if (errorCode === exceptionTranslator.errors.RPC.v) {
+          logger.debug(`TxWoker:${channelName}:${tx.transactionHash}:Republishing transaction`);
+          this.republishOnRPCError(tx.rawTx, tmpTxId, tx.transactionHash);
+        }
+        return Promise.reject(err);
+      });
     } catch (err) {
-      // this.examinError(err);
       return Promise.reject(err);
     }
   }
@@ -116,6 +126,16 @@ class TxWorker {
           reject(err);
         });
     });
+  }
+
+  async republishOnRPCError(tx, id, hash) {
+    logger.debug(`TxWoker:Resubmitting TX: Hash: ${hash}`);
+    this.publisher.pushMsg(JSON.stringify({
+      tx,
+      id,
+      hash,
+      resubmit: true,
+    }));
   }
 
 }
