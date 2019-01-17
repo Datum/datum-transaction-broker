@@ -22,7 +22,7 @@ class ExceptionTranslator {
 
   getMsg(error) {
     if (typeof error !== 'undefined') {
-      if (typeof error === 'object' && typeof error.messag !== 'undefined') {
+      if (typeof error === 'object' && typeof error.message !== 'undefined') {
         return error.message.toLowerCase();
       }
       if (typeof error === 'string') {
