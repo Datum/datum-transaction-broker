@@ -50,15 +50,8 @@ class Overseer {
 
   resumeWorld() {
     logger.debug('Overseer: Resuming world');
-    nonceService.calibrateNonce()
-      .then(() => {
-        this.redis.publish(this.channel, MSGS.resumeWorld);
-        this.worldStatus = true;
-      })
-      .catch((err) => {
-        logger.error(`Overseer: Failed to calibrate nonc: ${err}`);
-        this.stopTheWorld();
-      });
+    this.redis.publish(this.channel, MSGS.resumeWorld);
+    this.worldStatus = true;
   }
 
   pause() {
