@@ -124,7 +124,8 @@ class TxWorker {
             { error: (typeof err.message !== 'undefined' ? err.message : err) },
           ));
           reject(err);
-        });
+        })
+        .catch((err) => { reject(err); });
     });
   }
 
