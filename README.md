@@ -1,5 +1,7 @@
 # Datum Transaction Broker
 
+[![CircleCI](https://circleci.com/gh/Datum/datum-transaction-broker.svg?style=svg&circle-token=c0d79200eb724ddd6520da1760cb8f372e4f5c43)](https://circleci.com/gh/Datum/datum-transaction-broker)
+
 ### Preface
 
 The Datum Transaction Broker is a singleton transaction manager for Ethereum and Ethereum style networks like the Datum Network and other private Ethereum networks. 

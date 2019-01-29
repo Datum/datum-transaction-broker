@@ -1,0 +1,43 @@
+version: 2.1
+
+executors:
+  nodejs_executor:
+    docker:
+      - image: node:10.15.0
+    working_directory: /tmp/app
+
+jobs:
+  build:
+    executor: nodejs_executor
+    steps:
+      - checkout
+      - run: npm ci
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+            - app
+
+  lint:
+    executor: nodejs_executor
+    steps:
+      - attach_workspace:
+          at: /tmp
+      - run: npm run lint
+
+  test:
+    executor: nodejs_executor
+    steps:
+      - attach_workspace:
+          at: /tmp
+      - run: npm test
+
+workflows:
+  build_test_deploy:
+    jobs:
+      - build
+      - lint:
+          requires:
+            - build
+      - test:
+          requires:
+            - build
