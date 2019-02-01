@@ -1,0 +1,102 @@
+version: 2.1
+
+orbs:
+  awseb:
+    orbs:
+      awsebcli: sbc-orbs/awsebcli@0.0.1
+      slack: circleci/slack@1.0.3
+    jobs:
+      deploy:
+        parameters:
+          env:
+            description: EB environment name
+            type: string
+          region:
+            description: AWS region to deploy to
+            type: string
+        machine: true
+        working_directory: /tmp/app
+        steps:
+          - attach_workspace:
+              at: /tmp
+          - awsebcli/install
+          - run:
+              name: Deploy to EB
+              command: eb deploy << parameters.env >> --region << parameters.region >>
+          - slack/notify:
+              message: '${APP_NAME} has been deployed to << parameters.env >>'
+              color: '#1cbf43'
+
+executors:
+  nodejs_executor:
+    docker:
+      - image: node:10.15.0
+    working_directory: /tmp/app
+
+jobs:
+  build:
+    executor: nodejs_executor
+    steps:
+      - checkout
+      - run: npm ci
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+            - app
+
+  lint:
+    executor: nodejs_executor
+    steps:
+      - attach_workspace:
+          at: /tmp
+      - run: npm run lint
+
+  test:
+    executor: nodejs_executor
+    steps:
+      - attach_workspace:
+          at: /tmp
+      - run: npm test
+
+deploy_dev_conditions: &deploy_dev_conditions
+  requires:
+    - build
+  filters:
+    branches:
+      only:
+        - develop
+
+deploy_prod_conditions: &deploy_prod_conditions
+  requires:
+    - build
+  filters:
+    branches:
+      only:
+        - master
+
+workflows:
+  build_test_deploy:
+    jobs:
+      - build
+      - lint:
+          requires:
+            - build
+      - test:
+          requires:
+            - build
+      - awseb/deploy:
+          env: datum-transaction-broker-dev
+          region: ap-southeast-1
+          <<: *deploy_dev_conditions
+      - awseb/deploy:
+          env: datum-transaction-broker-s3-dev
+          region: ap-southeast-1
+          <<: *deploy_dev_conditions
+      - awseb/deploy:
+          env: datum-transaction-broker-prod-3
+          region: ap-southeast-1
+          <<: *deploy_prod_conditions
+      - awseb/deploy:
+          env: datum-transaction-broker-s3-prod
+          region: eu-central-1
+          <<: *deploy_prod_conditions
